@@ -23,7 +23,7 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // 모든 경로를 모두 허용해준다.
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll());
+                .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll());
         // RestController를 위한 csrf 해제
         http.csrf(AbstractHttpConfigurer::disable);
         return http.build();
