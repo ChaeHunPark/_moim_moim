@@ -2,7 +2,7 @@ package com.example.MoimMoim.service;
 
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.domain.Member;
-import com.example.MoimMoim.dto.MemberDTO;
+import com.example.MoimMoim.dto.MemberRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-// 회원가입 서비스 실제 로직 구현 클래스
+// 멤버 서비스 실제 로직 구현 클래스
 
 @Service
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public MemberServiceImpl(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
@@ -27,15 +27,15 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public void signup(MemberDTO memberDTO) {
+    public void signup(MemberRequestDTO memberRequestDTO) {
         Member member = Member.builder()
-                .email(memberDTO.getEmail())
-                .password(passwordEncoder.encode(memberDTO.getPassword()))
-                .phone(memberDTO.getPhone())
-                .name(memberDTO.getName())
-                .gender(memberDTO.getGender())
-                .nickname(memberDTO.getNickname())
-                .birthday(memberDTO.getBirthday())
+                .email(memberRequestDTO.getEmail())
+                .password(passwordEncoder.encode(memberRequestDTO.getPassword()))
+                .phone(memberRequestDTO.getPhone())
+                .name(memberRequestDTO.getName())
+                .gender(memberRequestDTO.getGender())
+                .nickname(memberRequestDTO.getNickname())
+                .birthday(memberRequestDTO.getBirthday())
                 .signupDate(LocalDateTime.now())
                 .build();
 

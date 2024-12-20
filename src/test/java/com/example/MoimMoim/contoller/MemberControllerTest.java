@@ -1,6 +1,6 @@
 package com.example.MoimMoim.contoller;
 
-import com.example.MoimMoim.dto.MemberDTO;
+import com.example.MoimMoim.dto.MemberRequestDTO;
 import com.example.MoimMoim.enums.Gender;
 import com.example.MoimMoim.service.MemberService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,12 +40,12 @@ class MemberControllerTest {
     void signup() throws Exception{
 
         // given
-        MemberDTO memberDTO = new MemberDTO("email1", "password", "010-0000-0000", "name", Gender.MALE, "nickname1",LocalDate.of(1990,1,1));
+        MemberRequestDTO memberRequestDTO = new MemberRequestDTO("email1", "password", "010-0000-0000", "name", Gender.MALE, "nickname1",LocalDate.of(1991,1,1));
 
         // when then
-        mockmvc.perform(post("/signup")
+        mockmvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(memberDTO)))
+                        .content(objectMapper.writeValueAsString(memberRequestDTO)))
                         .andExpect(status().isCreated());
     }
 
