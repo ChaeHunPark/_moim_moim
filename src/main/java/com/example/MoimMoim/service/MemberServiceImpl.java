@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 // 멤버 서비스 실제 로직 구현 클래스
@@ -28,6 +29,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void signup(MemberRequestDTO memberRequestDTO) {
+
+        if(memberRepository.existsByEmail(memberRequestDTO.getEmail())){
+            throw new IllegalStateException("이메일이 이미 존재합니다.");
+        }
+
         Member member = Member.builder()
                 .email(memberRequestDTO.getEmail())
                 .password(passwordEncoder.encode(memberRequestDTO.getPassword()))
@@ -35,7 +41,7 @@ public class MemberServiceImpl implements MemberService {
                 .name(memberRequestDTO.getName())
                 .gender(memberRequestDTO.getGender())
                 .nickname(memberRequestDTO.getNickname())
-                .birthday(memberRequestDTO.getBirthday())
+                .birthday(LocalDate.parse(memberRequestDTO.getBirthday()))
                 .signupDate(LocalDateTime.now())
                 .build();
 
