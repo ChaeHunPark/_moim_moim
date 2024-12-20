@@ -2,7 +2,6 @@ package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.dto.MemberRequestDTO;
 import com.example.MoimMoim.service.MemberService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,7 @@ public class MemberController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@Valid @RequestBody MemberRequestDTO memberRequestDTO) {
+    public ResponseEntity<Void> signup(@RequestBody MemberRequestDTO memberRequestDTO) {
         // 회원가입 처리 로직
         memberService.signup(memberRequestDTO);
         // 상태 코드 201만 반환
