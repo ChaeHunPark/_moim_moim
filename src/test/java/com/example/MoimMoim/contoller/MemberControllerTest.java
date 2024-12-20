@@ -40,7 +40,7 @@ class MemberControllerTest {
     void signup() throws Exception{
 
         // given
-        MemberRequestDTO memberRequestDTO = new MemberRequestDTO("email1", "password", "010-0000-0000", "name", Gender.MALE, "nickname1",LocalDate.of(1991,1,1));
+        MemberRequestDTO memberRequestDTO = new MemberRequestDTO("email1", "password", "010-0000-0000", "name", Gender.MALE, "nickname1","1991-01-01");
 
         // when then
         mockmvc.perform(post("/api/signup")
