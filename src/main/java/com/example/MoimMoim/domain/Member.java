@@ -2,15 +2,17 @@ package com.example.MoimMoim.domain;
 
 import com.example.MoimMoim.enums.Gender;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "member")
 @Builder
 @Getter
+@Setter
 public class Member {
 
     @Id

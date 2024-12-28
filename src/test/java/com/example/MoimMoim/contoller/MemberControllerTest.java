@@ -1,8 +1,9 @@
 package com.example.MoimMoim.contoller;
 
-import com.example.MoimMoim.dto.MemberRequestDTO;
+import com.example.MoimMoim.dto.member.MemberSignUpRequestDTO;
 import com.example.MoimMoim.enums.Gender;
-import com.example.MoimMoim.service.MemberService;
+import com.example.MoimMoim.service.MemberSignupService;
+import com.example.MoimMoim.service.PasswordRecoveryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,7 +27,7 @@ class MemberControllerTest {
     //MockBean은 3.4.0부터 deprecated 되었다.
     //MockitoBean을 사용하자
     @MockitoBean
-    private MemberService memberService;
+    private MemberSignupService memberSignupService;
 
     @Autowired
     MockMvc mockmvc;
@@ -36,17 +36,20 @@ class MemberControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("유저 회원가입 요청")
+    @DisplayName("유저 회원가입 요청 테스트")
     void signup() throws Exception{
 
         // given
-        MemberRequestDTO memberRequestDTO = new MemberRequestDTO("email1", "password", "010-0000-0000", "name", Gender.MALE, "nickname1","1991-01-01");
+        MemberSignUpRequestDTO memberSignUpRequestDTO = new MemberSignUpRequestDTO("email@naver.com", "Password12@", "010-0000-0000", "name", Gender.MALE, "nickname1","1991-01-01");
 
         // when then
         mockmvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(memberRequestDTO)))
+                        .content(objectMapper.writeValueAsString(memberSignUpRequestDTO)))
                         .andExpect(status().isCreated());
     }
+
+
+
 
 }

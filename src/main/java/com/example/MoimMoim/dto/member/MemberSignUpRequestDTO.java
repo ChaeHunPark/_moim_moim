@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto;
+package com.example.MoimMoim.dto.member;
 
 import com.example.MoimMoim.enums.Gender;
 import jakarta.validation.constraints.*;
@@ -6,12 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberRequestDTO {
+public class MemberSignUpRequestDTO {
 
     @Email(message = "이메일 형식이 올바르지 않습니다.")
     @NotBlank(message = "이메일은 필수 입력 값입니다.")
