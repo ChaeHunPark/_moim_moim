@@ -99,6 +99,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
     // 이메일 또는 카카오톡으로 인증번호 6자리 보내기
     // 인증방식 추가예정을 위해 select 인증.
     // 인증 방식 선택 및 코드 전송
+    @Override
     public void selectRecoveryMethodAndSendCode(RecoveryMethodRequestDTO recoveryMethodRequestDTO) {
 
         boolean exists = memberRepository.existsByEmail(recoveryMethodRequestDTO.getEmail());
@@ -134,8 +135,6 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
                 .orElseThrow(()-> new MemberNotFoundException("회원정보가 일치하지 않습니다.")));
 
         member.get().setPassword(passwordEncoder.encode(passwordResetRequestDTO.getNewPassword()));
-
-
 
     }
 

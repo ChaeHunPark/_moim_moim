@@ -47,4 +47,10 @@ public class Member {
     private LocalDateTime signupDate;  // 기본값으로 현재 시각 설정
 
 
+    @ManyToOne(fetch = FetchType.EAGER) // EAGER 로딩
+    @JoinColumn(name = "role_id", nullable = false) // Role 외래키
+    private Role role;
+
+
+
 }
