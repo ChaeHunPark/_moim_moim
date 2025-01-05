@@ -29,12 +29,14 @@ public class VerificationCodeManagerImpl implements VerificationCodeManager {
     private final Map<String, VerificationData> verificationCodeMap = new ConcurrentHashMap<>();
 
     // 인증번호를 메모리에 저장
+    @Override
     public void saveVerificationCode(String email, String code) {
         VerificationData data = new VerificationData(code, System.currentTimeMillis());
         verificationCodeMap.put(email, data);
     }
 
     // 인증번호 유효성 검사
+    @Override
     public void validateVerificationCode(String email, String userInputCode) {
         // 해쉬맵에서 이메일 정보를 가져온다.
         VerificationData data = verificationCodeMap.get(email);
@@ -63,6 +65,7 @@ public class VerificationCodeManagerImpl implements VerificationCodeManager {
     }
 
     // 인증번호 재요청 가능 여부 체크 keep
+    @Override
     public boolean canRequestNewCode(String email) {
 
 
@@ -87,6 +90,7 @@ public class VerificationCodeManagerImpl implements VerificationCodeManager {
     }
 
     // 인증번호 삭제 (인증 성공 후)
+    @Override
     public void removeVerificationCode(String email) {
         verificationCodeMap.remove(email);
     }
