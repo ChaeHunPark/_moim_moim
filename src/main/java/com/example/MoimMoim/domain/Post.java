@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -32,6 +33,7 @@ public class Post {
 
     @NotBlank
     @Size(max = 10000)
+    @Column(columnDefinition = "TEXT") //HTML 태그 저장 허용
     private String content;
 
     @Column(name = "create_at", nullable = false, updatable = false)
@@ -43,6 +45,9 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY) // 연관관계 주인
     @JoinColumn(name = "member_id", nullable = false) // 외래 키 설정
     private Member member;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Comment> comments;
 
     // 조회수 증가 메서드
     public void incrementViewCount() {

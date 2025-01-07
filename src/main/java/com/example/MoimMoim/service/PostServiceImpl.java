@@ -2,8 +2,10 @@ package com.example.MoimMoim.service;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
+import com.example.MoimMoim.dto.comment.CommentResponseDTO;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
-import com.example.MoimMoim.dto.post.PostWriteRequestDTO;
+import com.example.MoimMoim.dto.post.PostRequestDTO;
+import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,14 +40,14 @@ public class PostServiceImpl implements PostService{
 
 
 
-    public Post convertPost(PostWriteRequestDTO postWriteRequestDTO){
+    public Post convertPost(PostRequestDTO postRequestDTO){
         return Post.builder()
-                    .title(postWriteRequestDTO.getTitle())
-                    .category(postWriteRequestDTO.getCategory())
-                    .content(postWriteRequestDTO.getContent())
+                    .title(postRequestDTO.getTitle())
+                    .category(postRequestDTO.getCategory())
+                    .content(postRequestDTO.getContent())
                     .createAt(LocalDateTime.now())
                     .viewCount(0L)
-                    .member(findMember(postWriteRequestDTO.getMemberId()))
+                    .member(findMember(postRequestDTO.getMemberId()))
                     .build();
     }
 
@@ -60,8 +61,8 @@ public class PostServiceImpl implements PostService{
 
     @Transactional
     @Override
-    public void createPost(PostWriteRequestDTO postWriteRequestDTO) {
-        Post post = convertPost(postWriteRequestDTO);
+    public void createPost(PostRequestDTO postRequestDTO) {
+        Post post = convertPost(postRequestDTO);
         postRepository.save(post);
     }
 
@@ -76,6 +77,11 @@ public class PostServiceImpl implements PostService{
         post.incrementViewCount();
         postRepository.save(post);
 
+        List<CommentResponseDTO> comments = post.getComments().stream()
+                .map(comment -> new CommentResponseDTO(comment.getContent(), comment.getMember().getNickname(), formatDate(comment.getCreateAt())))
+                .collect(Collectors.toList());
+
+
 
         return PostResponseDTO.builder()
                 .title(post.getTitle())
@@ -83,24 +89,26 @@ public class PostServiceImpl implements PostService{
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
                 .createAt(formatDate(post.getCreateAt()))
+                .commentList(comments)
                 .viewCount(post.getViewCount())
                 .build();
     }
 
     // 전체 게시글 조회
     @Override
-    public List<PostResponseDTO> getAllPosts() {
+    public List<PostSummaryResponseDTO> getAllPosts() {
         List<Post> posts = postRepository.findAll();
+
         return posts.stream()
                 .map(post -> {
                     // Post 객체를 PostResponseDTO로 변환
-                    PostResponseDTO postResponseDTO = new PostResponseDTO();
+                    PostSummaryResponseDTO postResponseDTO = new PostSummaryResponseDTO();
                     postResponseDTO.setPostId(post.getPostId());
                     postResponseDTO.setTitle(post.getTitle());
                     postResponseDTO.setCategory(post.getCategory()); // Enum 타입 그대로 사용
-                    postResponseDTO.setContent(post.getContent());
                     postResponseDTO.setCreateAt(formatDate(post.getCreateAt())); // formatDate 메서드를 사용해 날짜 포맷팅
                     postResponseDTO.setNickname(post.getMember().getNickname()); // Member 객체에서 nickname 가져오기
+                    postResponseDTO.setCommentCount((long) post.getComments().size());
                     postResponseDTO.setViewCount(post.getViewCount());
                     return postResponseDTO;
                 })
@@ -108,15 +116,15 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public void updatePost(Long postId, PostWriteRequestDTO postWriteRequestDTO) {
+    public void updatePost(Long postId, PostRequestDTO postRequestDTO) {
         // 1. 포스트 아이디로 게시글 찾기
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
 
         // 2. 게시글 수정
-        post.setTitle(postWriteRequestDTO.getTitle());
-        post.setCategory(postWriteRequestDTO.getCategory());
+        post.setTitle(postRequestDTO.getTitle());
+        post.setCategory(postRequestDTO.getCategory());
         post.setContent(post.getContent());
 
         postRepository.save(post);
