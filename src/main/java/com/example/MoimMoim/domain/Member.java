@@ -1,11 +1,14 @@
 package com.example.MoimMoim.domain;
 
 import com.example.MoimMoim.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -50,6 +53,12 @@ public class Member {
     @ManyToOne(fetch = FetchType.EAGER) // EAGER 로딩
     @JoinColumn(name = "role_id", nullable = false) // Role 외래키
     private Role role;
+
+
+
+    // 일대다 양방향, 연관관계의 주인은 post다.
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>(); // 주인이 아닌 쪽
 
 
 
