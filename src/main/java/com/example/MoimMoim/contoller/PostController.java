@@ -1,9 +1,9 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
-import com.example.MoimMoim.dto.post.PostWriteRequestDTO;
+import com.example.MoimMoim.dto.post.PostRequestDTO;
+import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
 import com.example.MoimMoim.service.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -32,38 +32,38 @@ public class PostController {
 
 
     @PostMapping("/write")
-    public ResponseEntity<?> WritePost(@Valid @RequestBody PostWriteRequestDTO postWriteRequestDTO, BindingResult bindingResult){
+    public ResponseEntity<?> WritePost(@Valid @RequestBody PostRequestDTO postRequestDTO, BindingResult bindingResult){
         Map<String, String> errors = validationService.validate(bindingResult);
 
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        postService.createPost(postWriteRequestDTO);
+        postService.createPost(postRequestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 작성이 완료되었습니다.");
     }
 
 
     // 포스트 단건 조회
-    @GetMapping("/{postId}")
+    @GetMapping("/post-id/{postId}")
     public ResponseEntity<?> getPost(@PathVariable("postId") Long postId) {
         PostResponseDTO post = postService.viewPost(postId);
-        return ResponseEntity.ok(post);
+        return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
 
     // 전체 포스트 조회
     @GetMapping("/all")
-    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-        List<PostResponseDTO> posts = postService.getAllPosts();
+    public ResponseEntity<List<PostSummaryResponseDTO>> getAllPosts() {
+        List<PostSummaryResponseDTO> posts = postService.getAllPosts();
 
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.status(HttpStatus.CREATED).body(posts);
     }
 
     // 포스트 수정
-    @PutMapping("/{postId}")
+    @PutMapping("/post-id/{postId}")
     public ResponseEntity<?> updatePost( @PathVariable("postId") Long postId,
-                                         @Valid @RequestBody PostWriteRequestDTO postWriteRequestDTO,
+                                         @Valid @RequestBody PostRequestDTO postRequestDTO,
                                          BindingResult bindingResult) {
         Map<String, String> errors = validationService.validate(bindingResult);
 
@@ -71,18 +71,18 @@ public class PostController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        postService.updatePost(postId, postWriteRequestDTO);
+        postService.updatePost(postId, postRequestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 수정이 완료되었습니다.");
     }
 
     // 포스트 삭제
-    @DeleteMapping("/{postId}")
-    public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId) {
-        postService.deletePost(postId);
+    @DeleteMapping("/post-id/{postId}/member-id/{memberId}")
+    public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId,
+                                         @PathVariable("memberId") Long memberId) {
+        postService.deletePost(postId, memberId);
         return ResponseEntity.status(HttpStatus.CREATED).body("게시글 삭제가 완료되었습니다.");
     }
-
 
 
 
