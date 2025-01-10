@@ -49,6 +49,9 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Comment> comments;
 
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private MoimPost moimPost;
+
     // 조회수 증가 메서드
     public void incrementViewCount() {
         this.viewCount++;

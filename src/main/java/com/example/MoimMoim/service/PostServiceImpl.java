@@ -61,9 +61,10 @@ public class PostServiceImpl implements PostService{
 
     @Transactional
     @Override
-    public void createPost(PostRequestDTO postRequestDTO) {
+    public Post createPost(PostRequestDTO postRequestDTO) {
         Post post = convertPost(postRequestDTO);
         postRepository.save(post);
+        return post;
     }
 
 

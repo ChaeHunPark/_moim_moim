@@ -1,5 +1,6 @@
 package com.example.MoimMoim.service;
 
+import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
@@ -8,7 +9,8 @@ import java.util.List;
 
 public interface PostService {
     // 게시글 작성
-    void createPost(PostRequestDTO postRequestDTO);
+    // 서비스 재사용을 위해 반환형을 변경
+    Post createPost(PostRequestDTO postRequestDTO);
 
     // 게시글 단건 조회
     PostResponseDTO viewPost(Long postId);
