@@ -77,6 +77,7 @@ public class PostServiceImpl implements PostService{
         post.incrementViewCount();
         postRepository.save(post);
 
+        // 댓글리스트 조회
         List<CommentResponseDTO> comments = post.getComments().stream()
                 .map(comment -> new CommentResponseDTO(comment.getContent(), comment.getMember().getNickname(), formatDate(comment.getCreateAt())))
                 .collect(Collectors.toList());

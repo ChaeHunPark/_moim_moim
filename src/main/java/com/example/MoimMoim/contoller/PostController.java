@@ -49,7 +49,7 @@ public class PostController {
     @GetMapping("/post-id/{postId}")
     public ResponseEntity<?> getPost(@PathVariable("postId") Long postId) {
         PostResponseDTO post = postService.viewPost(postId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(post);
+        return ResponseEntity.status(HttpStatus.OK).body(post);
     }
 
     // 전체 포스트 조회
@@ -57,7 +57,7 @@ public class PostController {
     public ResponseEntity<List<PostSummaryResponseDTO>> getAllPosts() {
         List<PostSummaryResponseDTO> posts = postService.getAllPosts();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(posts);
+        return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
 
     // 포스트 수정
@@ -73,7 +73,7 @@ public class PostController {
 
         postService.updatePost(postId, postRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 수정이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("게시글 수정이 완료되었습니다.");
     }
 
     // 포스트 삭제
@@ -81,7 +81,7 @@ public class PostController {
     public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId,
                                          @PathVariable("memberId") Long memberId) {
         postService.deletePost(postId, memberId);
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("게시글 삭제가 완료되었습니다.");
     }
 
 

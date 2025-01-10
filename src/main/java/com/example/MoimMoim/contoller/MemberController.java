@@ -74,7 +74,7 @@ public class MemberController {
 
         //회원이 존재하는지 조회한다.
         passwordRecoveryService.isAccountExists(requestDTO);
-        return ResponseEntity.ok("계정이 존재합니다. 다음 단계로 진행합니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("계정이 존재합니다. 다음 단계로 진행합니다.");
     }
 
 
@@ -90,7 +90,7 @@ public class MemberController {
 
         // 인증방법 선택 및 인증코드 전송
         passwordRecoveryService.selectRecoveryMethodAndSendCode(requestDTO);
-        return ResponseEntity.ok("인증 코드가 전송되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("인증 코드가 전송되었습니다.");
     }
 
     // 3. 비밀번호 찾기 - 인증 코드 검증
@@ -104,7 +104,7 @@ public class MemberController {
 
         // 인증번호 제출하기
         passwordRecoveryService.verifyCode(requestDTO);
-        return ResponseEntity.ok("인증 코드가 확인되었습니다. 비밀번호를 재설정해주세요.");
+        return ResponseEntity.status(HttpStatus.OK).body("인증 코드가 확인되었습니다. 비밀번호를 재설정해주세요.");
     }
 
     // 4. 비밀번호 재설정
@@ -117,7 +117,7 @@ public class MemberController {
 
         // 비밀번호 변경
         passwordRecoveryService.resetPassword(requestDTO);
-        return ResponseEntity.ok("비밀번호가 성공적으로 재설정되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("비밀번호가 성공적으로 재설정되었습니다.");
     }
 }
 
