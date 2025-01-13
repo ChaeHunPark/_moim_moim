@@ -32,7 +32,7 @@ public class Post {
     private Category category;
 
     @NotBlank
-    @Size(max = 10000)
+    @Size(max = 3000)
     @Column(columnDefinition = "TEXT") //HTML 태그 저장 허용
     private String content;
 
@@ -48,9 +48,6 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Comment> comments;
-
-    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private MoimPost moimPost;
 
     // 조회수 증가 메서드
     public void incrementViewCount() {

@@ -12,5 +12,4 @@ public class CommentResponseDTO {
     private String content;
     private String nickname;
     private String createAt;
-
 }

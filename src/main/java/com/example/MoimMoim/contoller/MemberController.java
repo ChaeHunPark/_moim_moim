@@ -31,7 +31,9 @@ public class MemberController {
     private final PasswordRecoveryService passwordRecoveryService;
 
     @Autowired
-    public MemberController(ValidationService validationService, MemberSignupService memberSignupService, PasswordRecoveryService passwordRecoveryService) {
+    public MemberController(ValidationService validationService,
+                            MemberSignupService memberSignupService,
+                            PasswordRecoveryService passwordRecoveryService) {
         this.validationService = validationService;
         this.memberSignupService = memberSignupService;
         this.passwordRecoveryService = passwordRecoveryService;
@@ -40,7 +42,8 @@ public class MemberController {
 
     // 회원가입 처리
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody MemberSignUpRequestDTO memberSignUpRequestDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> signup(@Valid @RequestBody MemberSignUpRequestDTO memberSignUpRequestDTO,
+                                    BindingResult bindingResult) {
         // 유효성 검증 실패 처리
         Map<String, String> errors = validationService.validate(bindingResult);
         if (!errors.isEmpty()) {

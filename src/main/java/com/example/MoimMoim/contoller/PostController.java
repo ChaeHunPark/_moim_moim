@@ -81,7 +81,7 @@ public class PostController {
     public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId,
                                          @PathVariable("memberId") Long memberId) {
         postService.deletePost(postId, memberId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("게시글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("게시글 삭제가 완료되었습니다.");
     }
 
 

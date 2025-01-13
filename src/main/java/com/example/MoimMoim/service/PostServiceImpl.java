@@ -1,5 +1,6 @@
 package com.example.MoimMoim.service;
 
+import com.example.MoimMoim.util.PostUtilService;
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.dto.comment.CommentResponseDTO;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,16 +26,16 @@ public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final PostUtilService postUtilService;
+
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, MemberRepository memberRepository) {
+    public PostServiceImpl(PostRepository postRepository,
+                           MemberRepository memberRepository,
+                           PostUtilService postUtilService) {
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
-    }
-
-    public Member findMember(Long id){
-        return memberRepository.findById(id).
-                orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
+        this.postUtilService = postUtilService;
     }
 
 
@@ -47,24 +47,17 @@ public class PostServiceImpl implements PostService{
                     .content(postRequestDTO.getContent())
                     .createAt(LocalDateTime.now())
                     .viewCount(0L)
-                    .member(findMember(postRequestDTO.getMemberId()))
+                    .member(postUtilService.findMember(postRequestDTO.getMemberId(), memberRepository))
                     .build();
     }
 
 
-    //시간 포맷팅
-    private String formatDate(LocalDateTime createAt) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd. HH:mm");
-        return createAt.format(formatter);
-    }
-
 
     @Transactional
     @Override
-    public Post createPost(PostRequestDTO postRequestDTO) {
+    public void createPost(PostRequestDTO postRequestDTO) {
         Post post = convertPost(postRequestDTO);
         postRepository.save(post);
-        return post;
     }
 
 
@@ -80,17 +73,22 @@ public class PostServiceImpl implements PostService{
 
         // 댓글리스트 조회
         List<CommentResponseDTO> comments = post.getComments().stream()
-                .map(comment -> new CommentResponseDTO(comment.getContent(), comment.getMember().getNickname(), formatDate(comment.getCreateAt())))
+                .map(comment ->
+                        new CommentResponseDTO(
+                                comment.getContent(),
+                                comment.getMember().getNickname(),
+                                postUtilService.formatDate(comment.getCreateAt())))
                 .collect(Collectors.toList());
 
 
 
         return PostResponseDTO.builder()
+                .memberId(post.getMember().getMemberId())
                 .title(post.getTitle())
                 .category(post.getCategory())
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
-                .createAt(formatDate(post.getCreateAt()))
+                .createAt(postUtilService.formatDate(post.getCreateAt()))
                 .commentList(comments)
                 .viewCount(post.getViewCount())
                 .build();
@@ -108,7 +106,7 @@ public class PostServiceImpl implements PostService{
                     postResponseDTO.setPostId(post.getPostId());
                     postResponseDTO.setTitle(post.getTitle());
                     postResponseDTO.setCategory(post.getCategory()); // Enum 타입 그대로 사용
-                    postResponseDTO.setCreateAt(formatDate(post.getCreateAt())); // formatDate 메서드를 사용해 날짜 포맷팅
+                    postResponseDTO.setCreateAt(postUtilService.formatDate(post.getCreateAt())); // formatDate 메서드를 사용해 날짜 포맷팅
                     postResponseDTO.setNickname(post.getMember().getNickname()); // Member 객체에서 nickname 가져오기
                     postResponseDTO.setCommentCount((long) post.getComments().size());
                     postResponseDTO.setViewCount(post.getViewCount());
