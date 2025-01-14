@@ -1,7 +1,6 @@
 package com.example.MoimMoim.domain;
 
 import com.example.MoimMoim.enums.Category;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

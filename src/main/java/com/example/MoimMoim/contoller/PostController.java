@@ -8,6 +8,8 @@ import com.example.MoimMoim.service.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -52,10 +54,18 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(post);
     }
 
-    // 전체 포스트 조회
-    @GetMapping("/all")
-    public ResponseEntity<List<PostSummaryResponseDTO>> getAllPosts() {
-        List<PostSummaryResponseDTO> posts = postService.getAllPosts();
+//    전체 포스트 조회
+    @GetMapping("/posts")
+    public ResponseEntity<List<PostSummaryResponseDTO>> getAllPosts(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "40") int size,
+            @RequestParam(name = "category", required = false) String category, // 카테고리별 필터는 옵션임
+            @RequestParam(name = "sortBy", defaultValue = "date") String sortBy
+    ) {
+
+        Pageable pageable = PageRequest.of(page-1, size);
+
+        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
