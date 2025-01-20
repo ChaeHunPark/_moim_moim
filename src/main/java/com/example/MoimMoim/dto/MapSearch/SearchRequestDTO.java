@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class SearchRequestDTO {
 
     private String title;
-    private String category;
     private String address;
     private String roadAddress;
     private String mapx;  // 소수점으로 변환된 좌표
@@ -26,14 +25,6 @@ public class SearchRequestDTO {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getAddress() {

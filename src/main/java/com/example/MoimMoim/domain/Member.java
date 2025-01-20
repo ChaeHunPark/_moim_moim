@@ -50,7 +50,7 @@ public class Member {
     private LocalDateTime signupDate;  // 기본값으로 현재 시각 설정
 
 
-    @ManyToOne(fetch = FetchType.LAZY) // LAZY 로딩
+    @ManyToOne(fetch = FetchType.EAGER) // LAZY 로딩
     @JoinColumn(name = "role_id", nullable = false) // Role 외래키
     private Role role;
 

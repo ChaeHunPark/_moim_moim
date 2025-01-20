@@ -14,5 +14,4 @@ public class MapProperties {
     @Value("${map.clientSecret}")
     private String clientSecret;
 
-
 }
