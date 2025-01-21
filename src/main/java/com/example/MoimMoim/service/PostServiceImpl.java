@@ -57,6 +57,7 @@ public class PostServiceImpl implements PostService{
                     .category(postRequestDTO.getCategory())
                     .content(postRequestDTO.getContent())
                     .createAt(LocalDateTime.now())
+                    .updateAt(null)
                     .viewCount(0L)
                     .member(findMember(postRequestDTO.getMemberId()))
                     .build();
@@ -100,6 +101,7 @@ public class PostServiceImpl implements PostService{
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
                 .createAt(formatDate(post.getCreateAt()))
+                .updateAt(formatDate(post.getUpdateAt()))
                 .commentList(comments)
                 .viewCount(post.getViewCount())
                 .build();
@@ -214,6 +216,7 @@ public class PostServiceImpl implements PostService{
 //                .collect(Collectors.toList()); // 리스트 반환
 //    }
 
+    @Transactional
     @Override
     public void updatePost(Long postId, PostRequestDTO postRequestDTO) {
         // 1. 포스트 아이디로 게시글 찾기
@@ -225,10 +228,12 @@ public class PostServiceImpl implements PostService{
         post.setTitle(postRequestDTO.getTitle());
         post.setCategory(postRequestDTO.getCategory());
         post.setContent(post.getContent());
+        post.setUpdateAt(LocalDateTime.now());
 
         postRepository.save(post);
     }
 
+    @Transactional
     @Override
     public void deletePost(Long postId, Long memberId) {
         Post post = postRepository.findById(postId)

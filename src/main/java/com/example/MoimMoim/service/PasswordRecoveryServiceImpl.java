@@ -9,6 +9,7 @@ import com.example.MoimMoim.exception.auth.InvalidAuthenticationMethodException;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.auth.TooManyRequestsException;
 import com.example.MoimMoim.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
     /*
     * 인스턴스 중 이메일 정보가 변경될 가능성이 있을지도?
     * */
+    @Transactional
     @Override
     public void resetPassword(PasswordResetRequestDTO passwordResetRequestDTO) {
         logger.info("멤버찾기 진입");

@@ -57,7 +57,7 @@ public class MemberSignupServiceImpl implements MemberSignupService {
     /*
     * 회원가입
     * */
-
+    @Transactional
     @Override
     public void signup(MemberSignUpRequestDTO memberSignUpRequestDTO) {
 

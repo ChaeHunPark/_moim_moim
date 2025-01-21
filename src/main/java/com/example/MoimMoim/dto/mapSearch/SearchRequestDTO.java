@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.MapSearch;
+package com.example.MoimMoim.dto.mapSearch;
 
 
 import lombok.NoArgsConstructor;

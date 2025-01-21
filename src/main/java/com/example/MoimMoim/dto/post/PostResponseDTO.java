@@ -19,6 +19,7 @@ public class PostResponseDTO {
     private Category category;
     private String content;
     private String createAt;
+    private String updateAt;
     private String nickname;
     private List<CommentResponseDTO> commentList;
     private Long viewCount;

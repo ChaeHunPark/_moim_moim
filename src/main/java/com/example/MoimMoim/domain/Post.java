@@ -38,6 +38,9 @@ public class Post {
     @Column(name = "create_at", nullable = false, updatable = false)
     private LocalDateTime createAt;  // 기본값으로 현재 시각 설정
 
+    // 수정 일자
+    private LocalDateTime updateAt;
+
     @Column(name = "view_count", nullable = false)
     private Long viewCount = 0L;  // 조회수, 초기값 0으로 설정
 

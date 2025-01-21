@@ -3,7 +3,7 @@ package com.example.MoimMoim.service;
 import com.example.MoimMoim.config.MapProperties;
 
 
-import com.example.MoimMoim.dto.MapSearch.SearchResponseDTO;
+import com.example.MoimMoim.dto.mapSearch.SearchResponseDTO;
 import com.example.MoimMoim.exception.mapSearch.ClientErrorException;
 import com.example.MoimMoim.exception.mapSearch.ServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;

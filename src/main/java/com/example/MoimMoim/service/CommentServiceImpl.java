@@ -10,6 +10,7 @@ import com.example.MoimMoim.repository.CommentRepository;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.PostRepository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,7 @@ public class CommentServiceImpl implements CommentService{
 
 
     // 댓글 작성
+    @Transactional
     @Override
     public void createComment(CommentRequestDTO commentRequestDTO) {
         // 게시글과 사용자를 각각 확인
@@ -69,6 +71,7 @@ public class CommentServiceImpl implements CommentService{
 
 
     // 댓글 수정
+    @Transactional
     @Override
     public void updateComment(CommentRequestDTO commentRequestDTO, Long commentId) {
         // 게시글과 사용자, 댓글 정보 확인
@@ -81,6 +84,7 @@ public class CommentServiceImpl implements CommentService{
         commentRepository.save(comment);
     }
 
+    @Transactional
     @Override
     public void deleteComment(CommentRequestDTO commentRequestDTO, Long commentId) {
         Post post = validatePostExistence(commentRequestDTO.getPostId());

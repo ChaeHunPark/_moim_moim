@@ -49,7 +49,6 @@ public class Member {
     @Column(name = "signup_date", nullable = false, updatable = false)
     private LocalDateTime signupDate;  // 기본값으로 현재 시각 설정
 
-
     @ManyToOne(fetch = FetchType.EAGER) // LAZY 로딩
     @JoinColumn(name = "role_id", nullable = false) // Role 외래키
     private Role role;
@@ -60,8 +59,13 @@ public class Member {
 
     // 멤버를 조회할 때 게시글을 함께 조회하는 경우는 드물다. lAZY
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Post> posts = new ArrayList<>(); // 주인이 아닌 쪽
+    private List<Post> posts;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MoimPostComment> moimComments;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MoimPost> moimPosts;
 
 
 }

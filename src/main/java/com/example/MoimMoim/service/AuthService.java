@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 /*
 * DB에 저장, 조회, 삭제 로직을 추가하거나
-* Redis를 사용해 서버의 주도권을 가지는 로직 추가해야할 것.
+* Redis를 사용해 서버의 주도권을 가지는 로직 추가해야할 것. (Redis는 메모리를 사용하기 때문에 속도가 빠르다)
 *
 * */
 
