@@ -1,5 +1,6 @@
 package com.example.MoimMoim.config;
 
+import com.example.MoimMoim.jwtUtil.CustomLogoutFilter;
 import com.example.MoimMoim.jwtUtil.JWTFilter;
 import com.example.MoimMoim.jwtUtil.JWTUtil;
 import com.example.MoimMoim.jwtUtil.LoginFilter;
@@ -13,12 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @Configuration
 public class SecurityConfig {
-
-
 
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -60,6 +59,9 @@ public class SecurityConfig {
 
         http
                 .addFilterAt(new LoginFilter(authenticationConfiguration.getAuthenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil), LogoutFilter.class);
 
         http
                 .sessionManagement((session) -> session
