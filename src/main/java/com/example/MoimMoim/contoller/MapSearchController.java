@@ -1,7 +1,7 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.dto.mapSearch.SearchResponseDTO;
-import com.example.MoimMoim.service.MapSearchService;
+import com.example.MoimMoim.service.mapService.MapSearchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

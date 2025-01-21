@@ -7,7 +7,7 @@ import com.example.MoimMoim.dto.passwordrecovery.CodeVerificationRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.PasswordResetRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.RecoveryMethodRequestDTO;
 import com.example.MoimMoim.service.MemberSignupService;
-import com.example.MoimMoim.service.PasswordRecoveryService;
+import com.example.MoimMoim.service.authService.PasswordRecoveryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

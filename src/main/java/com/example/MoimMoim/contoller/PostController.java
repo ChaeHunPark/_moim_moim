@@ -4,7 +4,7 @@ import com.example.MoimMoim.common.ValidationService;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
-import com.example.MoimMoim.service.PostService;
+import com.example.MoimMoim.service.postService.PostService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

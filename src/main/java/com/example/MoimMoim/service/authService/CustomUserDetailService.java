@@ -1,17 +1,13 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.authService;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.jwtUtil.CustomUserDetails;
 import com.example.MoimMoim.repository.MemberRepository;
-import lombok.Setter;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class CustomUserDetailService implements UserDetailsService {

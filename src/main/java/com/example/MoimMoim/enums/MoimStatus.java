@@ -1,10 +1,10 @@
 package com.example.MoimMoim.enums;
 
 public enum MoimStatus {
-    RECRUITING("모집 중"),
-    IN_PROGRESS("진행 중"),
-    COMPLETED("완료됨"),
-    CANCELLED("취소됨");
+    모집중("모임 모집중"),
+    인원마감("모임 인원 마감"),
+    종료("모임 종료"),
+    취소("모임 취소");
 
     private final String description;
 

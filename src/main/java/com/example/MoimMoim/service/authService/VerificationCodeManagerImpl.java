@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.authService;
 
 import com.example.MoimMoim.exception.auth.VerificationCodeExpiredException;
 import com.example.MoimMoim.exception.auth.VerificationCodeMismatchException;

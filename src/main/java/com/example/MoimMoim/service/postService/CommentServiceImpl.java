@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.postService;
 
 import com.example.MoimMoim.domain.Comment;
 import com.example.MoimMoim.domain.Member;

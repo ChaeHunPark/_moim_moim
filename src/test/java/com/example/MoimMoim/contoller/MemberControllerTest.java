@@ -3,7 +3,6 @@ package com.example.MoimMoim.contoller;
 import com.example.MoimMoim.dto.member.MemberSignUpRequestDTO;
 import com.example.MoimMoim.enums.Gender;
 import com.example.MoimMoim.service.MemberSignupService;
-import com.example.MoimMoim.service.PasswordRecoveryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

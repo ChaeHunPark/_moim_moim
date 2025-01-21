@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.authService;
 
 import com.example.MoimMoim.jwtUtil.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;

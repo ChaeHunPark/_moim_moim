@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.postService;
 
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;

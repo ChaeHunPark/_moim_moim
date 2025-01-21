@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.authService;
 
 public interface VerificationCodeManager {
         /**

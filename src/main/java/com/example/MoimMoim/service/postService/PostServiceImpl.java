@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.postService;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
@@ -9,10 +9,10 @@ import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
 import com.example.MoimMoim.enums.Category;
-import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.PostRepository;
+import com.example.MoimMoim.service.utilService.PostUtilService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -24,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,21 +31,17 @@ import java.util.stream.Collectors;
 @Service
 public class PostServiceImpl implements PostService{
 
+    private final PostUtilService postUtilService;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, MemberRepository memberRepository, JPAQueryFactory jpaQueryFactory) {
+    public PostServiceImpl(PostUtilService postUtilService, PostRepository postRepository, MemberRepository memberRepository, JPAQueryFactory jpaQueryFactory) {
+        this.postUtilService = postUtilService;
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.jpaQueryFactory = jpaQueryFactory;
-    }
-
-
-    public Member findMember(Long id){
-        return memberRepository.findById(id).
-                orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
     }
 
 
@@ -59,16 +54,11 @@ public class PostServiceImpl implements PostService{
                     .createAt(LocalDateTime.now())
                     .updateAt(null)
                     .viewCount(0L)
-                    .member(findMember(postRequestDTO.getMemberId()))
+                    .member(postUtilService.findMember(postRequestDTO.getMemberId(),memberRepository))
                     .build();
     }
 
 
-    //시간 포맷팅
-    private String formatDate(LocalDateTime createAt) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd. HH:mm");
-        return createAt.format(formatter);
-    }
 
 
     @Transactional
@@ -90,21 +80,28 @@ public class PostServiceImpl implements PostService{
 
         // 댓글리스트 조회
         List<CommentResponseDTO> comments = post.getComments().stream()
-                .map(comment -> new CommentResponseDTO(comment.getContent(), comment.getMember().getNickname(), formatDate(comment.getCreateAt())))
+                .map(comment -> new CommentResponseDTO(comment.getContent(),
+                        comment.getMember().getNickname(),
+                        postUtilService.formatDate(comment.getCreateAt())))
                 .collect(Collectors.toList());
 
 
-
-        return PostResponseDTO.builder()
+        PostResponseDTO postResponseDTO = PostResponseDTO.builder()
                 .title(post.getTitle())
                 .category(post.getCategory())
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
-                .createAt(formatDate(post.getCreateAt()))
-                .updateAt(formatDate(post.getUpdateAt()))
+                .createAt(postUtilService.formatDate(post.getCreateAt()))
                 .commentList(comments)
                 .viewCount(post.getViewCount())
                 .build();
+
+        if(post.getUpdateAt() != null) {
+            postResponseDTO.setUpdateAt(postUtilService.formatDate(post.getUpdateAt()));
+        }
+
+        return postResponseDTO;
+
     }
 
     // 전체 게시글 조회
@@ -139,7 +136,7 @@ public class PostServiceImpl implements PostService{
         if(keyword != null && !keyword.isBlank()){
             switch (searchBy) {
             case "title":
-                whereClause.and(post.title.containsIgnoreCase(keyword));
+                whereClause.and(post.title.containsIgnoreCase(keyword)); // %title%
                 break;
             case "content":
                 whereClause.and(post.content.containsIgnoreCase(keyword));
@@ -152,7 +149,7 @@ public class PostServiceImpl implements PostService{
                 break;
             default:
                 throw new IllegalArgumentException("Invalid searchBy parameter: " + searchBy);
-                }
+            }
         }
 
         query.where(whereClause);
@@ -185,7 +182,7 @@ public class PostServiceImpl implements PostService{
                     postResponseDTO.setPostId(postEntity.getPostId());  // 게시글 ID
                     postResponseDTO.setTitle(postEntity.getTitle()); // 게시글 제목
                     postResponseDTO.setCategory(postEntity.getCategory()); // 카테고리
-                    postResponseDTO.setCreateAt(formatDate(postEntity.getCreateAt())); // 날짜 포맷
+                    postResponseDTO.setCreateAt(postUtilService.formatDate(postEntity.getCreateAt())); // 날짜 포맷
                     postResponseDTO.setNickname(postEntity.getMember().getNickname()); // 작성자 닉네임
                     postResponseDTO.setCommentCount(commentCount); // 댓글 수
                     postResponseDTO.setViewCount(postEntity.getViewCount()); // 조회 수

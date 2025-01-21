@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.mapService;
 
 import com.example.MoimMoim.config.MapProperties;
 

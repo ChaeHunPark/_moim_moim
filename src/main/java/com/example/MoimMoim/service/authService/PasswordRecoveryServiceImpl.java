@@ -1,4 +1,4 @@
-package com.example.MoimMoim.service;
+package com.example.MoimMoim.service.authService;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.dto.passwordrecovery.AccountVerificationRequestDTO;

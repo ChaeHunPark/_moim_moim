@@ -50,10 +50,10 @@ public class MoimPost {
     private MoimStatus moimStatus;
 
     @Column(nullable = false)
-    private Long currentParticipants = 1L;
+    private int currentParticipants = 1;
 
     @Column(nullable = false) // 최대 참가자는 필수
-    private Long maxParticipants;
+    private int maxParticipants;
 
     @Column(nullable = false) // 모임 날짜는 필수
     private LocalDateTime moimDate;
@@ -67,8 +67,6 @@ public class MoimPost {
     @Column(name = "view_count", nullable = false)
     private Long viewCount = 0L;  // 조회수, 초기값 0으로 설정
 
-
-
     // Member , LAZY
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -76,6 +74,10 @@ public class MoimPost {
 
     @OneToMany(mappedBy = "moimPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MoimPostComment> moimComments;
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
 
 
 }

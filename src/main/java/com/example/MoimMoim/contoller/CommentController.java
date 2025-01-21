@@ -2,7 +2,7 @@ package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
 import com.example.MoimMoim.dto.comment.CommentRequestDTO;
-import com.example.MoimMoim.service.CommentService;
+import com.example.MoimMoim.service.postService.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
