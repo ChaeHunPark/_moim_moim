@@ -11,6 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
+
+/*
+* DB에 저장, 조회, 삭제 로직을 추가하거나
+* Redis를 사용해 서버의 주도권을 가지는 로직 추가해야할 것.
+*
+* */
+
 @Service
 public class AuthService {
 
@@ -22,7 +29,7 @@ public class AuthService {
     }
 
     // 엑세스 토큰이 만료되었을 때 재발급 해준다.
-    private ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
 
 
         String refresh = null;
