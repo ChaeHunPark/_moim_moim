@@ -22,7 +22,7 @@ public class AuthService {
     }
 
     // 엑세스 토큰이 만료되었을 때 재발급 해준다.
-    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    private ResponseEntity<?> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
 
 
         String refresh = null;
@@ -67,13 +67,26 @@ public class AuthService {
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
 
-        //다시 만든다. 엑세스 토큰을
+        // Refresh 토큰도 함께 갱신, Refresh Rotate
         String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
 
         //response
         response.setHeader("Authorization", "Bearer " + newAccess);
+        response.addCookie(createCookie("refresh", newRefresh));
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60);
+        //cookie.setSecure(true);
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
     }
 
 }
