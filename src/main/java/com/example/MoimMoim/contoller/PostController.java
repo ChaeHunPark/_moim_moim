@@ -60,12 +60,14 @@ public class PostController {
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "40") int size,
             @RequestParam(name = "category", required = false) String category, // 카테고리별 필터는 옵션임
-            @RequestParam(name = "sortBy", defaultValue = "date") String sortBy
+            @RequestParam(name = "sortBy", defaultValue = "date") String sortBy,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "searchBy", defaultValue = "title") String searchBy // "title", "content", "title+content"
     ) {
 
         Pageable pageable = PageRequest.of(page-1, size);
 
-        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, pageable);
+        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, pageable, keyword, searchBy);
 
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }

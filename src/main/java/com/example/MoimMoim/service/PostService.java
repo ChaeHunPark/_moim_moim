@@ -15,7 +15,11 @@ public interface PostService {
     PostResponseDTO viewPost(Long postId);
 
     // 모든 게시글 조회
-    List<PostSummaryResponseDTO> getPostList(String category, String sortBy, Pageable pageable);
+    List<PostSummaryResponseDTO> getPostList(String category,
+                                             String sortBy,
+                                             Pageable pageable,
+                                             String keyword,
+                                             String searchBy);
 
     // 게시글 수정
     void updatePost(Long postId, PostRequestDTO requestDTO);
