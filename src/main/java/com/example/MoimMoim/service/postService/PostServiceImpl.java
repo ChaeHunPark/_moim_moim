@@ -82,7 +82,10 @@ public class PostServiceImpl implements PostService{
 
         // 댓글리스트 조회
         List<CommentResponseDTO> comments = post.getComments().stream()
-                .map(comment -> new CommentResponseDTO(comment.getContent(),
+                .map(comment -> new CommentResponseDTO(
+                        comment.getCommentId(),
+                        comment.getMember().getMemberId(),
+                        comment.getContent(),
                         comment.getMember().getNickname(),
                         postUtilService.formatForClient(comment.getCreateAt())))
                 .collect(Collectors.toList());

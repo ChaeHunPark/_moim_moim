@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class MoimCommentResponseDTO {
+    private Long commentId;
+    private Long memberId;
     private String content;
     private String nickname;
     private String createAt;
