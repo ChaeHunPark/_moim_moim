@@ -1,11 +1,10 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostSummaryResponseDTO;
-import com.example.MoimMoim.enums.MoimStatus;
-import com.example.MoimMoim.service.moimPostService.MoimPostService;
+import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
+import com.example.MoimMoim.service.moimService.MoimPostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;

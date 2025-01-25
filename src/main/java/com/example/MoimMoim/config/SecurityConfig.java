@@ -48,24 +48,24 @@ public class SecurityConfig {
         http
                 .httpBasic(AbstractHttpConfigurer::disable);
 
-        http
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/api/signup","/api/auth/reissue").permitAll()
-                        .anyRequest().authenticated());
-
-        //JWTFilter 등록
-        http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-
-        http
-                .addFilterAt(new LoginFilter(authenticationConfiguration.getAuthenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
-        http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil), LogoutFilter.class);
-
-        http
-                .sessionManagement((session) -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//        http
+//                .authorizeHttpRequests((auth) -> auth
+//                        .requestMatchers("/login", "/", "/api/signup","/api/auth/reissue").permitAll()
+//                        .anyRequest().authenticated());
+//
+//        //JWTFilter 등록
+//        http
+//                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+//
+//        http
+//                .addFilterAt(new LoginFilter(authenticationConfiguration.getAuthenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+//
+//        http
+//                .addFilterBefore(new CustomLogoutFilter(jwtUtil), LogoutFilter.class);
+//
+//        http
+//                .sessionManagement((session) -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 
 

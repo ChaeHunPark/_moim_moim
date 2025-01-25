@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moimPost;
+package com.example.MoimMoim.dto.moim;
 
 
 import com.example.MoimMoim.enums.Category;

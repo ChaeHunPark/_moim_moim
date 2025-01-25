@@ -9,6 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter @Setter
 public class CommentResponseDTO {
+    private Long commentId;
+    private Long memberId;
     private String content;
     private String nickname;
     private String createAt;

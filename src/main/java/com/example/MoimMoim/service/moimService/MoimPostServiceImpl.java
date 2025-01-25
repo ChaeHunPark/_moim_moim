@@ -1,10 +1,10 @@
-package com.example.MoimMoim.service.moimPostService;
+package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moimPost.MoimCommentResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostSummaryResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimCommentResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
@@ -78,6 +78,7 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPostRepository.save(moimPost);
     }
 
+    @Transactional
     @Override
     public MoimPostResponseDTO viewMoimPost(Long postId) {
         MoimPost moimPost = moimPostRepository.findById(postId)
@@ -89,6 +90,8 @@ public class MoimPostServiceImpl implements MoimPostService{
 
         List<MoimCommentResponseDTO> comments = moimPost.getMoimComments().stream()
                 .map(comment -> new MoimCommentResponseDTO(
+                        comment.getMoimCommentId(),
+                        comment.getMember().getMemberId(),
                         comment.getContent(),
                         comment.getMember().getNickname(),
                         postUtilService.formatForClient(comment.getCreateAt())
@@ -230,6 +233,7 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public void updatePost(Long moimPostId, MoimPostRequestDTO requestDTO) {
         Member member = memberRepository.findById(requestDTO.getMemberId())
@@ -251,6 +255,7 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPost.setUpdateAt(LocalDateTime.now());
     }
 
+    @Transactional
     @Override
     public void deletePost(Long moimPostId, Long memberId) {
         Member member = memberRepository.findById(memberId)

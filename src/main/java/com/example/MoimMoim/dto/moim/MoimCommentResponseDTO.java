@@ -1,17 +1,17 @@
-package com.example.MoimMoim.dto.moimPost;
+package com.example.MoimMoim.dto.moim;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class MoimCommentResponseDTO {
+    private Long commentId;
+    private Long memberId;
     private String content;
     private String nickname;
     private String createAt;

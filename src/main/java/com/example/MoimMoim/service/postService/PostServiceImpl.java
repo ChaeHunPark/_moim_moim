@@ -82,13 +82,17 @@ public class PostServiceImpl implements PostService{
 
         // 댓글리스트 조회
         List<CommentResponseDTO> comments = post.getComments().stream()
-                .map(comment -> new CommentResponseDTO(comment.getContent(),
+                .map(comment -> new CommentResponseDTO(
+                        comment.getCommentId(),
+                        comment.getMember().getMemberId(),
+                        comment.getContent(),
                         comment.getMember().getNickname(),
                         postUtilService.formatForClient(comment.getCreateAt())))
                 .collect(Collectors.toList());
 
 
         PostResponseDTO postResponseDTO = PostResponseDTO.builder()
+                .postId(post.getPostId())
                 .title(post.getTitle())
                 .category(post.getCategory())
                 .content(post.getContent())
@@ -226,7 +230,6 @@ public class PostServiceImpl implements PostService{
         // 2. postId와 member 기준으로 찾기
         Post post = postRepository.findByPostIdAndMember(postId, member)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
-
 
         // 2. 게시글 수정
         post.setTitle(postRequestDTO.getTitle());
