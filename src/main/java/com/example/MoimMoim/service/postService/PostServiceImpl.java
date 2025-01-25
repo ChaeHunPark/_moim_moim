@@ -4,11 +4,12 @@ import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.domain.QComment;
 import com.example.MoimMoim.domain.QPost;
-import com.example.MoimMoim.dto.comment.CommentResponseDTO;
+import com.example.MoimMoim.dto.post.CommentResponseDTO;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
 import com.example.MoimMoim.enums.Category;
+import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.PostRepository;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -82,7 +84,7 @@ public class PostServiceImpl implements PostService{
         List<CommentResponseDTO> comments = post.getComments().stream()
                 .map(comment -> new CommentResponseDTO(comment.getContent(),
                         comment.getMember().getNickname(),
-                        postUtilService.formatDate(comment.getCreateAt())))
+                        postUtilService.formatForClient(comment.getCreateAt())))
                 .collect(Collectors.toList());
 
 
@@ -91,13 +93,13 @@ public class PostServiceImpl implements PostService{
                 .category(post.getCategory())
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
-                .createAt(postUtilService.formatDate(post.getCreateAt()))
+                .createAt(postUtilService.formatForClient(post.getCreateAt()))
                 .commentList(comments)
                 .viewCount(post.getViewCount())
                 .build();
 
         if(post.getUpdateAt() != null) {
-            postResponseDTO.setUpdateAt(postUtilService.formatDate(post.getUpdateAt()));
+            postResponseDTO.setUpdateAt(postUtilService.formatForClient(post.getUpdateAt()));
         }
 
         return postResponseDTO;
@@ -175,14 +177,16 @@ public class PostServiceImpl implements PostService{
         return results.stream()
                 .map(tuple -> {
                     Post postEntity = tuple.get(post);          // 게시글 엔티티
-                    long commentCount = tuple.get(comment.count()); // 댓글 수
+
+                    long commentCount = Optional.ofNullable(tuple.get(comment.count())).orElse(0L);;// 댓글 수 0일 경우 0을 반환
+
 
                     // DTO 변환
                     PostSummaryResponseDTO postResponseDTO = new PostSummaryResponseDTO();
                     postResponseDTO.setPostId(postEntity.getPostId());  // 게시글 ID
                     postResponseDTO.setTitle(postEntity.getTitle()); // 게시글 제목
                     postResponseDTO.setCategory(postEntity.getCategory()); // 카테고리
-                    postResponseDTO.setCreateAt(postUtilService.formatDate(postEntity.getCreateAt())); // 날짜 포맷
+                    postResponseDTO.setCreateAt(postUtilService.formatForClient(postEntity.getCreateAt())); // 날짜 포맷
                     postResponseDTO.setNickname(postEntity.getMember().getNickname()); // 작성자 닉네임
                     postResponseDTO.setCommentCount(commentCount); // 댓글 수
                     postResponseDTO.setViewCount(postEntity.getViewCount()); // 조회 수
@@ -216,8 +220,11 @@ public class PostServiceImpl implements PostService{
     @Transactional
     @Override
     public void updatePost(Long postId, PostRequestDTO postRequestDTO) {
-        // 1. 포스트 아이디로 게시글 찾기
-        Post post = postRepository.findById(postId)
+        // 1. member 찾기
+        Member member = memberRepository.findById(postRequestDTO.getMemberId())
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        // 2. postId와 member 기준으로 찾기
+        Post post = postRepository.findByPostIdAndMember(postId, member)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
 
@@ -227,16 +234,16 @@ public class PostServiceImpl implements PostService{
         post.setContent(post.getContent());
         post.setUpdateAt(LocalDateTime.now());
 
-        postRepository.save(post);
     }
 
     @Transactional
     @Override
     public void deletePost(Long postId, Long memberId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        Post post = postRepository.findByPostIdAndMember(postId, member)
+                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+
         postRepository.delete(post);
     }
 

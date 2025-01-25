@@ -61,8 +61,8 @@ public class PostController {
             @RequestParam(name = "size", defaultValue = "40") int size,
             @RequestParam(name = "category", required = false) String category, // 카테고리별 필터는 옵션임
             @RequestParam(name = "sortBy", defaultValue = "date") String sortBy,
-            @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "searchBy", defaultValue = "title") String searchBy // "title", "content", "title+content"
+            @RequestParam(name = "keyword", required = false) String keyword, // 키워드도 옵션임
+            @RequestParam(name = "searchBy", defaultValue = "title") String searchBy// "title", "content", "title+content"
     ) {
 
         Pageable pageable = PageRequest.of(page-1, size);
@@ -89,11 +89,11 @@ public class PostController {
     }
 
     // 포스트 삭제
-    @DeleteMapping("/post-id/{postId}/member-id/{memberId}")
+    @DeleteMapping("/post-id/{postId}")
     public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId,
-                                         @PathVariable("memberId") Long memberId) {
+                                         @RequestParam("memberId") Long memberId) {
         postService.deletePost(postId, memberId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("게시글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("게시글 삭제가 완료되었습니다.");
     }
 
 

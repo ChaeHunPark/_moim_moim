@@ -1,10 +1,7 @@
 package com.example.MoimMoim.dto.post;
 
-import com.example.MoimMoim.dto.comment.CommentResponseDTO;
 import com.example.MoimMoim.enums.Category;
 import lombok.*;
-
-import java.util.List;
 
 @NoArgsConstructor
 @Builder

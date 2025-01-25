@@ -3,7 +3,7 @@ package com.example.MoimMoim.service.postService;
 import com.example.MoimMoim.domain.Comment;
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
-import com.example.MoimMoim.dto.comment.CommentRequestDTO;
+import com.example.MoimMoim.dto.post.CommentRequestDTO;
 import com.example.MoimMoim.exception.comment.CommentNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.CommentRepository;
@@ -77,11 +77,11 @@ public class CommentServiceImpl implements CommentService{
         // 게시글과 사용자, 댓글 정보 확인
         Post post = validatePostExistence(commentRequestDTO.getPostId());
         Member member = validateMemberExistence(commentRequestDTO.getMemberId());
-        Comment comment = validateCommentExistence(commentId);
+        Comment comment = commentRepository.findByCommentIdAndMember(commentId, member)
+                        .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 
         comment.setContent(commentRequestDTO.getContent());
 
-        commentRepository.save(comment);
     }
 
     @Transactional
@@ -89,7 +89,8 @@ public class CommentServiceImpl implements CommentService{
     public void deleteComment(CommentRequestDTO commentRequestDTO, Long commentId) {
         Post post = validatePostExistence(commentRequestDTO.getPostId());
         Member member = validateMemberExistence(commentRequestDTO.getMemberId());
-        Comment comment = validateCommentExistence(commentId);
+        Comment comment = commentRepository.findByCommentIdAndMember(commentId, member)
+                .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 
         commentRepository.delete(comment);
 
