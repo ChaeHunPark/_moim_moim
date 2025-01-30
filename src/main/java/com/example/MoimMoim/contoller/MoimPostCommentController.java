@@ -1,8 +1,8 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.dto.moimPost.MoimCommentRequestDTO;
-import com.example.MoimMoim.service.moimPostService.MoimCommentService;
+import com.example.MoimMoim.dto.moim.MoimCommentRequestDTO;
+import com.example.MoimMoim.service.moimService.MoimCommentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

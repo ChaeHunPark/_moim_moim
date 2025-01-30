@@ -1,8 +1,9 @@
-package com.example.MoimMoim.service.moimPostService;
+package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moimPost.MoimCommentRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimCommentRequestDTO;
 import com.example.MoimMoim.exception.comment.CommentNotFoundException;
+import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.*;
 import jakarta.transaction.Transactional;

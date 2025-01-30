@@ -1,12 +1,9 @@
-package com.example.MoimMoim.dto.moimPost;
+package com.example.MoimMoim.dto.moim;
 
-import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.enums.Category;
-import com.example.MoimMoim.enums.MoimStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;

@@ -92,6 +92,7 @@ public class PostServiceImpl implements PostService{
 
 
         PostResponseDTO postResponseDTO = PostResponseDTO.builder()
+                .postId(post.getPostId())
                 .title(post.getTitle())
                 .category(post.getCategory())
                 .content(post.getContent())
@@ -229,7 +230,6 @@ public class PostServiceImpl implements PostService{
         // 2. postId와 member 기준으로 찾기
         Post post = postRepository.findByPostIdAndMember(postId, member)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
-
 
         // 2. 게시글 수정
         post.setTitle(postRequestDTO.getTitle());

@@ -1,10 +1,10 @@
-package com.example.MoimMoim.service.moimPostService;
+package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moimPost.MoimCommentResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostSummaryResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimCommentResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;

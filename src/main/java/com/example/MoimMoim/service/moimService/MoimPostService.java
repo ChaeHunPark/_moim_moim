@@ -1,9 +1,8 @@
-package com.example.MoimMoim.service.moimPostService;
+package com.example.MoimMoim.service.moimService;
 
-import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moimPost.MoimPostSummaryResponseDTO;
-import com.example.MoimMoim.enums.MoimStatus;
+import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
 import org.springframework.data.domain.Pageable;
 
 

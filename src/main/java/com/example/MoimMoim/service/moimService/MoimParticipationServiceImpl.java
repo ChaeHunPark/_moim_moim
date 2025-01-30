@@ -1,0 +1,320 @@
+package com.example.MoimMoim.service.moimService;
+
+import com.example.MoimMoim.domain.*;
+import com.example.MoimMoim.dto.moim.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
+import com.example.MoimMoim.dto.moim.MoimParticipationResponseDTO;
+import com.example.MoimMoim.enums.MoimStatus;
+import com.example.MoimMoim.enums.ParticipationStatus;
+import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
+import com.example.MoimMoim.exception.member.MemberAlreadyExistsException;
+import com.example.MoimMoim.exception.member.MemberNotFoundException;
+import com.example.MoimMoim.exception.moim.*;
+import com.example.MoimMoim.exception.post.PostNotFoundException;
+import com.example.MoimMoim.repository.MemberRepository;
+import com.example.MoimMoim.repository.MoimAccptedMemberRepository;
+import com.example.MoimMoim.repository.MoimParticipationRepository;
+import com.example.MoimMoim.repository.MoimPostRepository;
+import com.example.MoimMoim.service.utilService.PostUtilService;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class MoimParticipationServiceImpl implements MoimParticipationService{
+
+    private final MoimPostRepository moimPostRepository;
+    private final MemberRepository memberRepository;
+    private final MoimParticipationRepository moimParticipationRepository;
+    private final PostUtilService postUtilService;
+    private final JPAQueryFactory jpaQueryFactory;
+    private final MoimAccptedMemberRepository moimAccptedMemberRepository;
+
+
+    @Autowired
+    public MoimParticipationServiceImpl(MoimPostRepository moimPostRepository, MemberRepository memberRepository, MoimParticipationRepository moimParticipationRepository, PostUtilService postUtilService, JPAQueryFactory jpaQueryFactory, MoimAccptedMemberRepository moimAccptedMemberRepository) {
+        this.moimPostRepository = moimPostRepository;
+        this.memberRepository = memberRepository;
+        this.moimParticipationRepository = moimParticipationRepository;
+        this.postUtilService = postUtilService;
+        this.jpaQueryFactory = jpaQueryFactory;
+        this.moimAccptedMemberRepository = moimAccptedMemberRepository;
+    }
+
+    public MoimParticipation convertMoimParticipation(MoimParticipationRequestDTO moimParticipationRequestDTO,
+                                                      Member member,
+                                                      MoimPost moimPost) {
+        return MoimParticipation.builder()
+                .intro(moimParticipationRequestDTO.getIntro())
+                .reasonParticipation(moimParticipationRequestDTO.getReasonParticipation())
+                .rejection_reason(null)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(null)
+                .participationStatus(ParticipationStatus.PENDING) // 대기
+                .member(member)
+                .moimPost(moimPost)
+                .build();
+
+    }
+
+    @Override
+    public void applyForParticipation(Long moimPostId, Long memberId, MoimParticipationRequestDTO moimParticipationRequestDTO) {
+        // 1. 게시글 정보가 필요하다.
+        MoimPost moimPost = moimPostRepository.findById(moimPostId)
+                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
+
+        // 2. 신청자 정보가 필요하다.
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
+
+
+        if (moimPost.getMoimStatus() == MoimStatus.인원마감) {
+            throw new MoimMaxParticipantsReachedException("인원이 마감되었습니다.");
+        }
+        /*
+        * RuntimeException 고칠 것
+        * */
+
+        // 본인 게시글에 신청하고 있는가?
+        if (moimPost.getMember().getMemberId().equals(member.getMemberId())) {
+            throw new InvalidAccessException("잘못된 접근입니다.");
+        }
+
+        // 이미 신청한 모임인가?
+        boolean isAlreadyApplied = moimParticipationRepository.existsByMoimPostAndMember(moimPost, member);
+        if (isAlreadyApplied) {
+            throw new AlreadyAppliedException("이미 신청한 모임입니다.");
+        }
+
+
+        MoimParticipation moimParticipation = convertMoimParticipation(moimParticipationRequestDTO, member, moimPost);
+        moimParticipationRepository.save(moimParticipation);
+    }
+
+
+    public MoimParticipationResponseDTO createMoimParticipationResponseDTO(MoimParticipation moimParticipation, MoimPost moimPost) {
+
+        MoimParticipationResponseDTO moimParticipationResponseDTO = MoimParticipationResponseDTO.builder()
+                .moimParticipationRequestId(moimParticipation.getMoimParticipationRequestId()).moimPostId(moimPost.getMoimPostId())
+                .region(moimPost.getRegion())
+                .Category(moimPost.getCategory())
+                .hostNickname(moimPost.getMember().getNickname())
+                .nickname(moimParticipation.getMember().getNickname())
+                .intro(moimParticipation.getIntro())
+                .reasonParticipation(moimParticipation.getReasonParticipation())
+                .moimDate(postUtilService.formatForClient(moimPost.getMoimDate()))
+                .moimStatus(moimPost.getMoimStatus())
+                .ParticipationStatus(moimParticipation.getParticipationStatus())
+                .createdAt(postUtilService.formatForClient(moimParticipation.getCreatedAt()))
+                .build();
+
+        if(moimParticipation.getUpdatedAt() != null){
+            moimParticipationResponseDTO.setUpdatedAt(postUtilService.formatForClient(LocalDateTime.now()));
+        }
+
+        return moimParticipationResponseDTO;
+    }
+
+
+    @Override
+    public MoimParticipationResponseDTO getMyParticipation(Long memberId, Long participationId) {
+
+
+        // 1. 신청 정보가 존재하는가?
+        MoimParticipation moimParticipation = moimParticipationRepository.findById(participationId)
+                .orElseThrow(() -> new MoimParticipationNotFoundException("신청 정보가 존재하지 않습니다."));
+
+        MoimPost moimPost = moimParticipation.getMoimPost();
+
+        // 2. 게시글 정보가 존재하는가?
+        if (moimPost == null) {
+            throw new PostNotFoundException("게시글이 존재하지 않습니다.");
+        }
+
+        // 2-1 신청 정보의 id와 member의 id가 다른가?
+        if (!moimParticipation.getMember().getMemberId().equals(memberId)){
+            throw new MemberInfoMismatchException("회원 정보가 일치하지 않습니다.");
+        }// Exception 고치기
+
+
+        return createMoimParticipationResponseDTO(moimParticipation, moimPost);
+    }
+
+    @Override
+    public MoimParticipationResponseDTO getReceivedParticipation(Long ownerId, Long participationId) {
+        // 1. 신청 정보가 존재하는가?
+        MoimParticipation moimParticipation = moimParticipationRepository.findById(participationId)
+                .orElseThrow(() -> new ParticipationNotFoundException("신청 정보가 존재하지 않습니다."));
+
+        MoimPost moimPost = moimParticipation.getMoimPost();
+
+        // 2. 게시글 정보가 존재하는가?
+        if (moimPost == null) {
+            throw new PostNotFoundException("게시글이 존재하지 않습니다.");
+        }
+
+        // 2-1 모임 포스트 작성자의 id와 ownerId의 id가 다른가?
+        if (moimPost.getMember().getMemberId().equals(ownerId)){
+            throw new MemberInfoMismatchException("회원 정보가 일치하지 않습니다.");
+        }// Exception 고치기
+
+
+        return createMoimParticipationResponseDTO(moimParticipation, moimPost);
+    }
+
+    @Override
+    public List<MoimParticipationListResponseDTO> getMyParticipationList(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        List<MoimParticipation> moimParticipations = moimParticipationRepository.findByMember(member);
+
+
+        return moimParticipations.stream().map(participation -> new MoimParticipationListResponseDTO(
+                        participation.getMoimParticipationRequestId(),
+                        participation.getMoimPost().getMoimPostId(),
+                        participation.getMoimPost().getRegion(),
+                        participation.getMoimPost().getCategory(),
+                        participation.getMoimPost().getMoimDate().toString(),
+                        participation.getMember().getNickname(),
+                        participation.getParticipationStatus(),
+                        participation.getCreatedAt().toString()
+                )).toList();
+    }
+
+    @Override
+    public List<MoimParticipationListResponseDTO> getReceivedParticipationList(Long ownerId) {
+        QMember member = QMember.member;
+        QMoimPost moimPost = QMoimPost.moimPost;
+        QMoimParticipation participation = QMoimParticipation.moimParticipation;
+
+
+        // Projections.constructor를 사용하여 결과를 DTO로 매핑
+        return jpaQueryFactory.select
+                        (Projections.constructor( // 첫번째 인자는 변환할 DTO class, 다음인자는 순서가 맞아야함.
+                            MoimParticipationListResponseDTO.class,
+                            participation.moimParticipationRequestId,
+                            moimPost.moimPostId,
+                            moimPost.region,
+                            moimPost.category,
+                            moimPost.moimDate,
+                            participation.member.nickname,
+                            participation.participationStatus,
+                            participation.createdAt.stringValue()
+                        ))
+                .from(participation)
+                .join(participation.moimPost, moimPost) // 연관관계 연결 id로 조인
+                .join(moimPost.member, member) // 연관관계 연결 id로 조인
+                .where(member.memberId.eq(ownerId)) // Post의 Member는 작성한 사람, member와 join해서 작성자를 찾는다.
+                .fetch();
+    }
+
+    // 상태가 이미 수락(ACCEPTED) 또는 거절(REJECTED)인지 확인하는 메서드
+    private void checkIfParticipationStatusIsFinal(MoimParticipation participation) {
+        if (participation.getParticipationStatus() == ParticipationStatus.ACCEPTED ||
+                participation.getParticipationStatus() == ParticipationStatus.REJECTED) {
+            throw new ParticipationStatusFinalException("이미 상태가 변경된 신청입니다. 더 이상 수락 또는 거절할 수 없습니다.");
+        }
+    }
+
+    @Override
+    public void acceptParticipation(Long participationId, Long ownerId) {
+        MoimParticipation participation = moimParticipationRepository.findById(participationId)
+                .orElseThrow(() -> new ParticipationNotFoundException("참여 신청을 찾을 수 없습니다."));
+
+
+        MoimPost moimPost = moimPostRepository.findById(participation.getMoimPost().getMoimPostId())
+                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+
+        // 해당 모임이 신청자의 모임 게시글이 아니면 에러 처리
+        if (!participation.getMoimPost().getMember().getMemberId().equals(ownerId)) {
+            throw new MoimOwnerMismatchException("이 모임의 주최자가 아닙니다.");
+        }
+
+        // 해당 모임의 인원이 만원이면.
+        if(moimPost.getCurrentParticipants() >= moimPost.getMaxParticipants()) {
+            throw new MoimMaxParticipantsReachedException("모임의 최대 인원에 도달했습니다.");
+        }
+
+        // 상태가 이미 수락이나 거절인지
+        checkIfParticipationStatusIsFinal(participation);
+
+
+        // 상태를 '수락'으로 변경
+        participation.setParticipationStatus(ParticipationStatus.ACCEPTED);
+        moimParticipationRepository.save(participation);  // 상태 업데이트
+
+        // 참여자를 늘린다.
+        moimPost.incrementCurrentParticipants();
+
+        MoimAccptedMember moimAccptedMember = MoimAccptedMember.builder()
+                .acceptedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .moimParticipation(participation)
+                .member(participation.getMember())
+                .build();
+
+        // 수락 목록에 저장
+        moimAccptedMemberRepository.save(moimAccptedMember);
+
+
+    }
+
+    @Override
+    public void rejectParticipation(Long participationId, Long ownerId, String rejectionReason) {
+        MoimParticipation participation = moimParticipationRepository.findById(participationId)
+                .orElseThrow(() -> new ParticipationNotFoundException("참여 신청을 찾을 수 없습니다."));
+
+        // 해당 모임이 신청자의 모임 게시글이 아니면 에러 처리
+        if (!participation.getMoimPost().getMember().getMemberId().equals(ownerId)) {
+            throw new MoimOwnerMismatchException("이 모임의 주최자가 아닙니다.");
+        }
+
+        // 상태가 이미 수락이나 거절인지
+        checkIfParticipationStatusIsFinal(participation);
+
+        // 상태를 '거절'로 변경하고 거절 이유를 설정
+        participation.setParticipationStatus(ParticipationStatus.REJECTED);
+        participation.setRejection_reason(rejectionReason);  // 거절 이유 저장
+        moimParticipationRepository.save(participation);  // 상태 및 거절 이유 업데이트
+    }
+
+    // 상태에 따라 참여자 조회 메서드
+    private List<MoimParticipationListResponseDTO> getParticipantsByStatus(Long moimPostId, ParticipationStatus status) {
+        QMoimAccptedMember acceptedMember = QMoimAccptedMember.moimAccptedMember;
+        QMoimParticipation participation = QMoimParticipation.moimParticipation;
+        QMoimPost moimPost = QMoimPost.moimPost;
+        QMember member = QMember.member;
+
+        return jpaQueryFactory
+                .select(Projections.constructor(MoimParticipationListResponseDTO.class,
+                        acceptedMember.moimParticipation.moimParticipationRequestId, // 신청 고유 ID
+                        moimPost.moimPostId, // 모임 고유 ID
+                        moimPost.region, // 지역
+                        moimPost.category, // 카테고리 이름
+                        moimPost.moimDate, // 모임 날짜
+                        member.nickname, // 신청자 닉네임
+                        participation.participationStatus, // 참여 상태
+                        participation.createdAt)) // 신청 생성 시간
+                .from(acceptedMember)
+                .join(acceptedMember.moimParticipation, participation)  // MoimParticipation과 조인
+                .join(participation.moimPost, moimPost)  // MoimPost와 조인
+                .join(participation.member, member)  // 참여자(회원)과 조인
+                .where(moimPost.moimPostId.eq(moimPostId) // 모임 ID로 필터링
+                        .and(participation.participationStatus.eq(status)))  // 상태에 맞는 참여자만 필터링
+                .fetch();
+    }
+
+    @Override
+    public List<MoimParticipationListResponseDTO> getAcceptedParticipants(Long moimPostId) {
+        return getParticipantsByStatus(moimPostId, ParticipationStatus.ACCEPTED);
+    }
+
+    @Override
+    public List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId) {
+        return getParticipantsByStatus(moimPostId, ParticipationStatus.REJECTED);
+    }
+}

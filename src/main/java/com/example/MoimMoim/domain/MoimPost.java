@@ -72,12 +72,16 @@ public class MoimPost {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @OneToMany(mappedBy = "moimPost",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<MoimParticipation> moimParticipations;
+
     @OneToMany(mappedBy = "moimPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MoimPostComment> moimComments;
 
     public void incrementViewCount() {
         this.viewCount++;
     }
+    public void incrementCurrentParticipants() {this.currentParticipants++;}
 
 
 }
