@@ -53,6 +53,9 @@ dependencies {
 
 
 
+	// H2 의존성 (test scope)
+	testImplementation 'com.h2database:h2'
+
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'

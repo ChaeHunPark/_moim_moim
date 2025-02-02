@@ -5,10 +5,12 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class MemberSignUpRequestDTO {
 
     @Email(message = "이메일 형식이 올바르지 않습니다.")
@@ -29,7 +31,7 @@ public class MemberSignUpRequestDTO {
     @NotBlank(message = "전화번호는 필수 입력 값입니다.")
     private String phone;
 
-    @NotBlank(message = "이름은 필수 입력 값입니다.")
+    @NotNull(message = "이름은 필수 입력 값입니다.")
     @Size(min = 1, max = 50, message = "이름은 1자 이상 50자 이하로 입력해야 합니다.")
     private String name;
 
