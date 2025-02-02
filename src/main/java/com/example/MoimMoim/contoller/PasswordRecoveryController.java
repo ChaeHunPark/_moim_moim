@@ -1,12 +1,10 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.dto.member.MemberSignUpRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.AccountVerificationRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.CodeVerificationRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.PasswordResetRequestDTO;
 import com.example.MoimMoim.dto.passwordrecovery.RecoveryMethodRequestDTO;
-import com.example.MoimMoim.service.MemberSignupService;
 import com.example.MoimMoim.service.authService.PasswordRecoveryService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,51 +18,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-
 @RestController
-@RequestMapping("/api")
-public class MemberController {
+@RequestMapping("/api/password-recovery")
+public class PasswordRecoveryController {
 
-
-    private final ValidationService validationService;
-    private final MemberSignupService memberSignupService;
     private final PasswordRecoveryService passwordRecoveryService;
+    private final ValidationService validationService;
 
     @Autowired
-    public MemberController(ValidationService validationService, MemberSignupService memberSignupService, PasswordRecoveryService passwordRecoveryService) {
-        this.validationService = validationService;
-        this.memberSignupService = memberSignupService;
+    public PasswordRecoveryController(PasswordRecoveryService passwordRecoveryService, ValidationService validationService) {
         this.passwordRecoveryService = passwordRecoveryService;
-    }
-
-
-    // 회원가입 처리
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody MemberSignUpRequestDTO memberSignUpRequestDTO, BindingResult bindingResult) {
-        // 유효성 검증 실패 처리
-        Map<String, String> errors = validationService.validate(bindingResult);
-        if (!errors.isEmpty()) {
-            return ResponseEntity.badRequest().body(errors);
-        }
-
-//        try {
-//            // 회원가입 처리 로직
-//            memberSignupService.signup(memberSignUpRequestDTO);
-//            return ResponseEntity.status(HttpStatus.CREATED).body("Signup successful.");
-//        } catch (IllegalStateException e) {
-//            // 비즈니스 로직에서 발생한 예외 처리
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원이미 존재");
-//        }
-
-        // 회원가입 처리 로직, GlobalExceptionHandler 활용으로 try-catch문이 제거 가능해졌다.
-        memberSignupService.signup(memberSignUpRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 완료되었습니다.");
-
+        this.validationService = validationService;
     }
 
     // 비밀번호 찾기
     // 1. 계정 존재 여부 확인
-    @PostMapping("/password-recovery/start")
+    @PostMapping("/start")
     public ResponseEntity<?> checkAccountExistence(@Valid @RequestBody AccountVerificationRequestDTO requestDTO, BindingResult bindingResult) {
 
         Map<String, String> errors = validationService.validate(bindingResult);
@@ -80,7 +49,7 @@ public class MemberController {
 
     // 비밀번호 찾기
     // 2. 인증 방법 선택 (이메일 외 다른방법 추가예정)
-    @PostMapping("/password-recovery/choose-method")
+    @PostMapping("/choose-method")
     public ResponseEntity<?> chooseRecoveryMethod(@Valid @RequestBody RecoveryMethodRequestDTO requestDTO, BindingResult bindingResult) {
 
         Map<String, String> errors = validationService.validate(bindingResult);
@@ -94,7 +63,7 @@ public class MemberController {
     }
 
     // 3. 비밀번호 찾기 - 인증 코드 검증
-    @PostMapping("/password-recovery/verify-code")
+    @PostMapping("/verify-code")
     public ResponseEntity<?> verifyRecoveryCode(@RequestBody CodeVerificationRequestDTO requestDTO, BindingResult bindingResult) {
         Map<String, String> errors = validationService.validate(bindingResult);
         if (!errors.isEmpty()) {
@@ -108,7 +77,7 @@ public class MemberController {
     }
 
     // 4. 비밀번호 재설정
-    @PostMapping("/password-recovery/reset-password")
+    @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequestDTO requestDTO, BindingResult bindingResult) {
         Map<String, String> errors = validationService.validate(bindingResult);
         if (!errors.isEmpty()) {
@@ -120,5 +89,3 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.OK).body("비밀번호가 성공적으로 재설정되었습니다.");
     }
 }
-
-

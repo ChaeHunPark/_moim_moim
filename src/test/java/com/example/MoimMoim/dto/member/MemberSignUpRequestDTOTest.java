@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -17,6 +18,7 @@ class MemberSignUpRequestDTOTest {
     private final Validator validator = factory.getValidator();
 
     @Test
+    @DisplayName("회원가입, 유효성 검사를 실패하지 않아야 한다.")
     void validDTOTest() {
         // 유효한 데이터로 DTO 생성
         MemberSignUpRequestDTO dto = new MemberSignUpRequestDTO(
@@ -37,6 +39,7 @@ class MemberSignUpRequestDTOTest {
     }
 
     @Test
+    @DisplayName("회원가입, 잘못된 데이터 입력시 에러 메시지를 반환한다.")
     void invalidDTOTest() {
         // 잘못된 데이터로 DTO 생성
         MemberSignUpRequestDTO dto = new MemberSignUpRequestDTO(

@@ -12,7 +12,7 @@ public class TestConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/api/signup","/api/auth/reissue").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated());
         http
                 .csrf(AbstractHttpConfigurer::disable);

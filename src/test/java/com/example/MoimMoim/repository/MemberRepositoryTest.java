@@ -4,7 +4,9 @@ import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Role;
 import com.example.MoimMoim.enums.Gender;
 import com.example.MoimMoim.enums.RoleName;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -13,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,13 +32,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test") // H2 데이터베이스를 사용하도록 설정
+@Transactional
 class MemberRepositoryTest {
 
     @Autowired
     private MemberRepository memberRepository;
 
     Role role = new Role(1L, RoleName.ROLE_USER);
+
     Member member;
+    Member savedMember;
 
     @BeforeEach
     void setup() {
@@ -51,20 +57,38 @@ class MemberRepositoryTest {
                 .role(role)
                 .signupDate(LocalDateTime.now())
                 .build();
+        savedMember = memberRepository.save(member); // 저장
     }
 
 
     @Test
-    void saveMember() {
+    @DisplayName("회원 저장 및 Id로 조회")
+    void saveAndFindById() {
 
         // when
-        memberRepository.save(member); // 저장
-        Optional<Member> findMember = memberRepository.findById(1L);
+        Member savedMember = memberRepository.save(member);// 저장
+        Member findMember = memberRepository.findById(savedMember.getMemberId())
+                .orElseThrow(() -> new NoSuchElementException("찾기 실패"));
 
         // then
         assertThat(findMember).isNotNull();
-        assertThat(findMember.get().getEmail()).isEqualTo("email@example.com");
-        assertThat(findMember.get().getName()).isEqualTo("John Doe");
-        assertThat(findMember.get().getPassword()).isEqualTo("password123");
+        assertThat(findMember.getEmail()).isEqualTo(savedMember.getEmail());
+        assertThat(findMember.getName()).isEqualTo(savedMember.getName());
+        assertThat(findMember.getPassword()).isEqualTo(savedMember.getPassword());
     }
+
+    @Test
+    @DisplayName("회원 저장 및 email로 조회")
+    void saveAndFindByEmail() {
+
+        Member findMember = memberRepository.findByEmail(savedMember.getEmail())
+                .orElseThrow(() -> new NoSuchElementException("찾기 실패"));
+
+        // then
+        assertThat(findMember).isNotNull();
+        assertThat(findMember.getEmail()).isEqualTo(savedMember.getEmail());
+        assertThat(findMember.getName()).isEqualTo(savedMember.getName());
+        assertThat(findMember.getPassword()).isEqualTo(savedMember.getPassword());
+    }
+
 }
