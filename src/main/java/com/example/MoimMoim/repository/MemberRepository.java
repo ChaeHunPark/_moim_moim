@@ -14,6 +14,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     //이메일, 전화번호 기준으로 리턴, 객체를 반환하지 않을 시에는 boolean이 적합하다.
     boolean existsByNameAndEmail(String name, String email);
 
+    boolean existsByNickname(String nickname);
+
     //이메일 기준으로 찾기
     Optional<Member> findByEmail(String email);
 

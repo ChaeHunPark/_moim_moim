@@ -39,7 +39,7 @@ public class Member {
     @Column(name = "gender", nullable = false)
     private Gender gender;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(name = "nickname", nullable = false, unique = true)
     private String nickname;
 
     @Column(name = "birthday", nullable = false)

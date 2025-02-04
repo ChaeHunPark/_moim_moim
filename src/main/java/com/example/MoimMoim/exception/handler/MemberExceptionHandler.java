@@ -1,5 +1,6 @@
 package com.example.MoimMoim.exception.handler;
 
+import com.example.MoimMoim.exception.member.DuplicateNicknameException;
 import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
 import com.example.MoimMoim.exception.member.MemberAlreadyExistsException;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
@@ -17,6 +18,12 @@ public class MemberExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일이 이미 존재합니다.");
     }
 
+    // 닉네임 중복 예외처리
+    @ExceptionHandler(DuplicateNicknameException.class)
+    public ResponseEntity<String> handleDuplicateNicknameException(DuplicateNicknameException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 사용 중인 닉네임 입니다.");
+    }
+
     //멤버 중복 예외처리
     @ExceptionHandler(MemberAlreadyExistsException.class)
     public ResponseEntity<String> handleMemberAlreadyExistsException(MemberAlreadyExistsException ex) {
@@ -28,4 +35,8 @@ public class MemberExceptionHandler {
     public ResponseEntity<String> handleMemberNotFoundException(MemberNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원정보가 일치하지 않습니다.");
     }
+
+
+
+
 }

@@ -2,6 +2,7 @@ package com.example.MoimMoim.service;
 
 import com.example.MoimMoim.domain.Role;
 import com.example.MoimMoim.enums.RoleName;
+import com.example.MoimMoim.exception.member.DuplicateNicknameException;
 import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.domain.Member;
@@ -63,6 +64,10 @@ public class MemberSignupServiceImpl implements MemberSignupService {
 
         if(memberRepository.existsByEmail(memberSignUpRequestDTO.getEmail())){
             throw new EmailAlreadyExistsException("이메일이 이미 존재합니다.");
+        }
+
+        if(memberRepository.existsByNickname(memberSignUpRequestDTO.getNickname())) {
+            throw new DuplicateNicknameException("이미 사용 중인 닉네임입니다.");
         }
 
         Member member = convertToMember(memberSignUpRequestDTO);
