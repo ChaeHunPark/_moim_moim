@@ -7,6 +7,8 @@ import com.example.MoimMoim.dto.passwordrecovery.RecoveryMethodRequestDTO;
 
 public interface PasswordRecoveryService {
 
+    String generateVerificationCode();
+
     //해당 계정이 존재하는가?
     void isAccountExists(AccountVerificationRequestDTO accountVerificationRequestDTO);
 

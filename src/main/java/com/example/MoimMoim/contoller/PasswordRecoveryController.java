@@ -64,7 +64,7 @@ public class PasswordRecoveryController {
 
     // 3. 비밀번호 찾기 - 인증 코드 검증
     @PostMapping("/verify-code")
-    public ResponseEntity<?> verifyRecoveryCode(@RequestBody CodeVerificationRequestDTO requestDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> verifyRecoveryCode(@Valid @RequestBody CodeVerificationRequestDTO requestDTO, BindingResult bindingResult) {
         Map<String, String> errors = validationService.validate(bindingResult);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(errors);
@@ -78,7 +78,7 @@ public class PasswordRecoveryController {
 
     // 4. 비밀번호 재설정
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequestDTO requestDTO, BindingResult bindingResult) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetRequestDTO requestDTO, BindingResult bindingResult) {
         Map<String, String> errors = validationService.validate(bindingResult);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(errors);

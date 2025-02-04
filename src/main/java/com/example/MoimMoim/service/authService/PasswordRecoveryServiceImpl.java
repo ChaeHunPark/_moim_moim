@@ -44,7 +44,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
     }
 
     // 6자리 인증번호 생성 keep
-    private String generateVerificationCode() {
+    public String generateVerificationCode() {
         Random random = new Random();
         int number = random.nextInt(999999);
         return String.format("%06d", number);
