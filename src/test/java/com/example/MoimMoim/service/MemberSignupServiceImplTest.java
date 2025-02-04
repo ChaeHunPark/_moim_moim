@@ -5,7 +5,9 @@ import com.example.MoimMoim.domain.Role;
 import com.example.MoimMoim.dto.member.MemberSignUpRequestDTO;
 import com.example.MoimMoim.enums.Gender;
 import com.example.MoimMoim.enums.RoleName;
+import com.example.MoimMoim.exception.member.DuplicateNicknameException;
 import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
+import com.example.MoimMoim.exception.member.RoleNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.RoleRepository;
 import org.junit.jupiter.api.*;
@@ -19,6 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static reactor.core.publisher.Mono.when;
 
 
 @ExtendWith(MockitoExtension.class) //Mockito의 기능을 활성화
@@ -36,10 +42,10 @@ class MemberSignupServiceImplTest {
     @InjectMocks // 필요한 의존성을(위 Mock 들을)자동으로 주입, 실제 우리가 테스트할 부분
     private MemberSignupServiceImpl memberSignupService; // 실제객체를 주입해야한다.
 
-    static MemberSignUpRequestDTO signUpRequestDTO = new MemberSignUpRequestDTO();
+    MemberSignUpRequestDTO signUpRequestDTO = new MemberSignUpRequestDTO();
 
-    @BeforeAll
-    static void setup(){
+    @BeforeEach
+    void setup(){
         signUpRequestDTO.setEmail("email@naver.com");
         signUpRequestDTO.setPassword("Password@@1");
         signUpRequestDTO.setPhone("010-2222-2222");
@@ -50,25 +56,6 @@ class MemberSignupServiceImplTest {
 
     }
 
-
-
-
-    @Test
-    @DisplayName("이메일이 이미 존재하는 경우")
-    public void testSignup_EmailAlreadyExists() {
-        // given
-
-
-        // 이미 이메일이 존재하는 경우
-        Mockito.when(memberRepository.existsByEmail(signUpRequestDTO.getEmail())).thenReturn(true);
-
-        // when / then
-        EmailAlreadyExistsException exception = Assertions.assertThrows(EmailAlreadyExistsException.class, () -> {
-            memberSignupService.signup(signUpRequestDTO);
-        });
-
-        Assertions.assertEquals("이메일이 이미 존재합니다.", exception.getMessage());
-    }
 
     @Test
     @DisplayName("회원가입 서비스 성공 테스트")
@@ -81,33 +68,47 @@ class MemberSignupServiceImplTest {
         Role mockRole = new Role(1L, RoleName.ROLE_USER);
         Mockito.when(roleRepository.findByRoleName(RoleName.ROLE_USER)).thenReturn(Optional.of(mockRole));
 
-        // 이메일이 존재하지 않으면 정상 회원가입 처리
+//         이메일이 존재하지 않으면 정상 회원가입 처리
         Mockito.when(memberRepository.existsByEmail(signUpRequestDTO.getEmail())).thenReturn(false);
-
+//         닉네임이 존재하지 않으면 정상 회원가입 처리
+        Mockito.when(memberRepository.existsByNickname(signUpRequestDTO.getNickname())).thenReturn(false);
 
         // when
         memberSignupService.signup(signUpRequestDTO);
 
-
         // then
         // memberRepository.save가 한 번 호출되었는지 검증
-        Mockito.verify(memberRepository, Mockito.times(1)).save(Mockito.any(Member.class));
+        Mockito.verify(memberRepository, Mockito.times(1)).save(any(Member.class));
+    }
+
+
+    @Test
+    @DisplayName("이메일이 이미 존재하는 경우")
+    public void testSignup_EmailAlreadyExists() {
+        // given
+
+        // 이미 이메일이 존재하는 경우
+        Mockito.when(memberRepository.existsByEmail(signUpRequestDTO.getEmail())).thenReturn(true);
+
+        // when / then
+        assertThatThrownBy(() ->
+                memberSignupService.signup(signUpRequestDTO)
+        ).isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessage("이메일이 이미 존재합니다.");
     }
 
     @Test
-    @DisplayName("권한 검증 오류 테스트")
-    public void testValidateRole_RoleNotFound() {
+    @DisplayName("닉네임이 이미 존재하는 경우")
+    public void testSignup_NicknameAlreadyExists() {
         // given
-        RoleName roleName = RoleName.ROLE_USER;
 
-        // when / then
-        Mockito.when(roleRepository.findByRoleName(roleName)).thenReturn(Optional.empty());
+        // 이미 이메일이 존재하는 경우
+        Mockito.when(memberRepository.existsByNickname(signUpRequestDTO.getNickname())).thenReturn(true);
 
-        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            memberSignupService.validateRole(roleName);
-        });
-
-        Assertions.assertEquals("해당 권한은 존재하지 않습니다.", exception.getMessage());
+        assertThatThrownBy(() ->
+                memberSignupService.signup(signUpRequestDTO)
+        ).isInstanceOf(DuplicateNicknameException.class)
+                .hasMessage("이미 사용 중인 닉네임입니다.");
     }
 
     @Test
@@ -126,6 +127,23 @@ class MemberSignupServiceImplTest {
         Assertions.assertNotNull(role);
         Assertions.assertEquals(roleName, role.getRoleName());
     }
+
+    @Test
+    @DisplayName("권한 검증 오류 테스트")
+    public void testValidateRole_RoleNotFound() {
+        // given
+        RoleName roleName = RoleName.ROLE_USER;
+
+        // when / then
+        Mockito.when(roleRepository.findByRoleName(roleName)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                memberSignupService.signup(signUpRequestDTO)
+        ).isInstanceOf(RoleNotFoundException.class)
+                .hasMessage("해당 권한은 존재하지 않습니다.");
+
+    }
+
 
 
 }

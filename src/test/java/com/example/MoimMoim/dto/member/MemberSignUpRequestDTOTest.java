@@ -1,10 +1,13 @@
 package com.example.MoimMoim.dto.member;
 
 import com.example.MoimMoim.enums.Gender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,72 @@ class MemberSignUpRequestDTOTest {
     // Validator 초기화
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator = factory.getValidator();
+
+
+    @Test
+    @DisplayName("DTO -> JSON 변환 테스트")
+    void testDtoToJson() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        MemberSignUpRequestDTO dto = new MemberSignUpRequestDTO(
+                "valid@example.com",      // 이메일
+                "ValidPassword1@",        // 비밀번호
+                "010-1234-5678",          // 전화번호
+                "John Doe",               // 이름
+                Gender.MALE,              // 성별 (예시 Gender enum: MALE, FEMALE 등)
+                "johnny",                 // 닉네임
+                "1990-01-01"              // 생년월일
+        );
+
+        //
+        String json = objectMapper.writeValueAsString(dto);
+
+        Assertions.assertThat(json)
+                .isEqualTo(
+                        "{" +
+                                "\"email\":\"valid@example.com\"," +
+                                "\"password\":\"ValidPassword1@\"," +
+                                "\"phone\":\"010-1234-5678\"," +
+                                "\"name\":\"John Doe\"," +
+                                "\"gender\":\"MALE\"," +
+                                "\"nickname\":\"johnny\"," +
+                                "\"birthday\":\"1990-01-01\"" +
+                                "}"
+                );
+
+
+
+    }
+
+    @Test
+    @DisplayName("JSON -> DTO 변환 테스트")
+    void testJsonToDto() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // JSON 문자열 정의
+        String json = "{"
+                + "\"email\":\"valid@example.com\","
+                + "\"password\":\"ValidPassword1@\","
+                + "\"phone\":\"010-1234-5678\","
+                + "\"name\":\"John Doe\","
+                + "\"gender\":\"MALE\","
+                + "\"nickname\":\"johnny\","
+                + "\"birthday\":\"1990-01-01\""
+                + "}";
+
+        // JSON -> DTO 변환 (역직렬화)
+        MemberSignUpRequestDTO dto = objectMapper.readValue(json, MemberSignUpRequestDTO.class);
+
+        // 변환된 DTO의 값 검증
+        Assertions.assertThat(dto.getEmail()).isEqualTo("valid@example.com");
+        Assertions.assertThat(dto.getPassword()).isEqualTo("ValidPassword1@");
+        Assertions.assertThat(dto.getPhone()).isEqualTo("010-1234-5678");
+        Assertions.assertThat(dto.getName()).isEqualTo("John Doe");
+        Assertions.assertThat(dto.getGender()).isEqualTo(Gender.MALE);
+        Assertions.assertThat(dto.getNickname()).isEqualTo("johnny");
+        Assertions.assertThat(dto.getBirthday()).isEqualTo("1990-01-01");
+    }
+
 
     @Test
     @DisplayName("회원가입, 유효성 검사를 실패하지 않아야 한다.")
@@ -80,4 +149,5 @@ class MemberSignUpRequestDTOTest {
             }
         }
     }
+
 }

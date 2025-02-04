@@ -5,12 +5,15 @@ import com.example.MoimMoim.domain.Role;
 import com.example.MoimMoim.enums.Gender;
 import com.example.MoimMoim.enums.RoleName;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -19,6 +22,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 // Repository 계층 테스트에 최적화된 어노테이션
 
@@ -31,8 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
-@ActiveProfiles("test") // H2 데이터베이스를 사용하도록 설정
-@Transactional
 class MemberRepositoryTest {
 
     @Autowired
@@ -81,6 +83,7 @@ class MemberRepositoryTest {
     @DisplayName("회원 저장 및 email로 조회")
     void saveAndFindByEmail() {
 
+        // when
         Member findMember = memberRepository.findByEmail(savedMember.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("찾기 실패"));
 
@@ -90,5 +93,51 @@ class MemberRepositoryTest {
         assertThat(findMember.getName()).isEqualTo(savedMember.getName());
         assertThat(findMember.getPassword()).isEqualTo(savedMember.getPassword());
     }
+
+    @Test
+    @DisplayName("회원 저장 실패 - Role이 빈 객체")
+    void shouldFailWhenRoleIsEmpty() {
+        Role emptyRole = new Role();
+
+        Member emptyRoleMember = Member.builder()
+                .email("email@example.com")
+                .password("password123")
+                .phone("010-1234-5678")
+                .name("John Doe")
+                .gender(Gender.MALE)
+                .nickname("johnny")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .role(emptyRole)
+                .signupDate(LocalDateTime.now())
+                .build();
+
+        assertThatThrownBy(() ->
+                memberRepository.save(emptyRoleMember)
+                ).isInstanceOf(InvalidDataAccessApiUsageException.class);
+
+    }
+
+    @Test
+    @DisplayName("회원 저장 실패 - 중복 저장")
+    void shouldFailWhenEmailIsDuplicate() {
+        // given
+        Member duplicateMember = Member.builder()
+                .email("email@example.com")
+                .password("password123")
+                .phone("010-1234-5678")
+                .name("John Doe")
+                .gender(Gender.MALE)
+                .nickname("johnny")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .role(role)
+                .signupDate(LocalDateTime.now())
+                .build();
+
+        assertThatThrownBy(() ->
+                memberRepository.save(duplicateMember)
+        ).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+
 
 }

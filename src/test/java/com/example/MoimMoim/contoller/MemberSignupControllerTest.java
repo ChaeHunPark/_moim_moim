@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,8 +65,7 @@ class MemberSignupControllerTest {
                 "1991-01-01");
 
         // validationService가 항상 빈 에러 리스트를 반환하도록 Mock 설정
-        given(validationService.validate(any(BindingResult.class)))
-                .willReturn(Collections.emptyMap());
+        when(validationService.validate(any(BindingResult.class))).thenReturn(Collections.emptyMap());
 
         // when then
         mockMvc.perform(post("/api/signup")
@@ -82,7 +83,7 @@ class MemberSignupControllerTest {
         errors.put("username", "Username is required");
         errors.put("password", "Password must be at least 6 characters");
 
-        given(validationService.validate(any(BindingResult.class))).willReturn(errors);
+        when(validationService.validate(any(BindingResult.class))).thenReturn(errors);
 
         // 회원가입 요청 DTO (잘못된 데이터)
         MemberSignUpRequestDTO requestDTO = new MemberSignUpRequestDTO();
@@ -94,10 +95,6 @@ class MemberSignupControllerTest {
                 .andExpect(jsonPath("$.username").value("Username is required")) // username 필드 에러 메시지 검증
                 .andExpect(jsonPath("$.password").value("Password must be at least 6 characters")); // password 필드 에러 메시지 검증
     }
-
-//
-//
-//
 
 
 }

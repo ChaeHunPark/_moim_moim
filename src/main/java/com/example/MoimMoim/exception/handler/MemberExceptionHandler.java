@@ -1,9 +1,6 @@
 package com.example.MoimMoim.exception.handler;
 
-import com.example.MoimMoim.exception.member.DuplicateNicknameException;
-import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
-import com.example.MoimMoim.exception.member.MemberAlreadyExistsException;
-import com.example.MoimMoim.exception.member.MemberNotFoundException;
+import com.example.MoimMoim.exception.member.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,6 +31,12 @@ public class MemberExceptionHandler {
     @ExceptionHandler(MemberNotFoundException.class)
     public ResponseEntity<String> handleMemberNotFoundException(MemberNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원정보가 일치하지 않습니다.");
+    }
+
+    //권한 존재 예외처리
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<String> handleRoleNotFoundException(RoleNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 권한은 존재하지 않습니다.");
     }
 
 

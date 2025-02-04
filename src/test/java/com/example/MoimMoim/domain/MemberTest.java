@@ -11,111 +11,72 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 
-
-@DataJpaTest
-@ActiveProfiles("test") // H2 데이터베이스를 사용하도록 설정
 public class MemberTest {
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
 
     Role role = new Role(1L, RoleName.ROLE_USER);
 
-
-
     @Test
-    @DisplayName("Member 객체가 정상적으로 생성되어야 한다.")
-    void testMemberCreation() {
-        // Given: 회원을 생성
+    @DisplayName("회원 엔티티 생성 테스트")
+    void createMember() {
+        // given
+        LocalDate birthday = LocalDate.of(1995, 5, 20);
+        LocalDateTime signupDate = LocalDateTime.now();
+
         Member member = Member.builder()
-                .email("test@naver.com")
-                .password("password123")
+                .email("test@example.com")
+                .password("securePassword123")
                 .phone("010-1234-5678")
-                .name("John Doe")
+                .name("홍길동")
                 .gender(Gender.MALE)
-                .nickname("johndoe")
-                .birthday(LocalDate.of(1990, 1, 1))
-                .signupDate(LocalDateTime.now())
-                .role(role) // Role 객체도 생성하여 연결
-                .build();
+                .nickname("길동이")
+                .birthday(birthday)
+                .signupDate(signupDate)
+                .role(role)
+                .build();// 단순 객체 주입
 
-        // When: Member 객체를 저장
-        Member savedMember = memberRepository.save(member);
-
-        // Then: AssertJ로 검증
-        Assertions.assertThat(savedMember.getEmail()).isEqualTo("test@naver.com");
-        Assertions.assertThat(savedMember.getPhone()).isEqualTo("010-1234-5678");
-        Assertions.assertThat(savedMember.getName()).isEqualTo("John Doe");
-        Assertions.assertThat(savedMember.getGender()).isEqualTo(Gender.MALE);
-        Assertions.assertThat(savedMember.getNickname()).isEqualTo("johndoe");
-        Assertions.assertThat(savedMember.getBirthday()).isEqualTo(LocalDate.of(1990, 1, 1));
-        Assertions.assertThat(savedMember.getRole()).isNotNull();
+        // when & then
+        assertThat(member.getEmail()).isEqualTo("test@example.com");
+        assertThat(member.getPhone()).isEqualTo("010-1234-5678");
+        assertThat(member.getNickname()).isEqualTo("길동이");
+        assertThat(member.getGender()).isEqualTo(Gender.MALE);
+        assertThat(member.getBirthday()).isEqualTo(birthday);
+        assertThat(member.getSignupDate()).isEqualTo(signupDate);
     }
 
     @Test
-    @DisplayName("Member 엔티티가 Role과 제대로 연결되어야 한다.")
-    void testRoleAssociation() {
-        // Given: Role과 연결된 Member 생성
+    @DisplayName("회원 정보 수정 테스트")
+    void updateMemberInfo() {
+        // given
         Member member = Member.builder()
-                .email("test2@naver.com")
-                .password("password123")
-                .phone("010-2345-6789")
-                .name("Jane Doe")
-                .gender(Gender.FEMALE)
-                .nickname("janedoe")
-                .birthday(LocalDate.of(1992, 2, 2))
+                .email("test@example.com")
+                .password("securePassword123")
+                .phone("010-1234-5678")
+                .name("홍길동")
+                .gender(Gender.MALE)
+                .nickname("길동이")
+                .birthday(LocalDate.of(1995, 5, 20))
                 .signupDate(LocalDateTime.now())
                 .role(role)
                 .build();
 
-        // When: Member 객체 저장
-        Member savedMember = memberRepository.save(member);
+        // when
+        member.setNickname("새로운닉네임");
+        member.setPhone("010-9876-5432");
 
-        // Then: AssertJ로 Role과 연관된 정보를 검증
-        Assertions.assertThat(savedMember.getRole().getRoleName()).isEqualTo(RoleName.ROLE_USER);
+        // then
+        assertThat(member.getNickname()).isEqualTo("새로운닉네임");
+        assertThat(member.getPhone()).isEqualTo("010-9876-5432");
     }
 
-    @Test
-    @DisplayName("회원 가입 시, 필수 값이 없으면 예외가 발생해야 한다.")
-    void testMemberValidation() {
-        // Given: 유효하지 않은 DTO (필수 값이 빠진 상태)
-            // DTO에서 필수 값을 Validation하기 떄문에 하지 않는다.
-    }
 
-    @Test
-    @DisplayName("Member 객체의 생성일자는 현재 날짜여야 한다.")
-    void testSignupDate() {
-        // Given: 회원을 생성하면서 생성일자를 자동으로 설정
-        Member member = Member.builder()
-                .email("test4@naver.com")
-                .password("password123")
-                .phone("010-4567-8901")
-                .name("New User")
-                .gender(Gender.MALE)
-                .nickname("newuser")
-                .birthday(LocalDate.of(1994, 4, 4))
-                .signupDate(LocalDateTime.now())  // 현재 날짜로 설정
-                .role(role) // Role 객체 연결
-                .build();
-
-        // When: Member 객체 저장
-        Member savedMember = memberRepository.save(member);
-
-        // Then: AssertJ로 signupDate가 현재 날짜와 일치하는지 확인
-        Assertions.assertThat(savedMember.getSignupDate())
-                .isEqualToIgnoringNanos(LocalDateTime.now());
-    }
 }

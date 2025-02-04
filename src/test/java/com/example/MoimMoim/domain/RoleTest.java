@@ -5,9 +5,11 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 
 class RoleTest {
+
     @Test
     @DisplayName("Role 객체 생성 시 ROLE_USER가 설정되어야 한다.")
     void testRoleCreation() {
@@ -29,7 +31,7 @@ class RoleTest {
         role.setRoleName(RoleName.ROLE_ADMIN);
 
         // Then
-        Assertions.assertThat(role.getRoleName())
+        assertThat(role.getRoleName())
                 .isEqualTo(RoleName.ROLE_ADMIN);
     }
 
@@ -40,11 +42,11 @@ class RoleTest {
         Role role = new Role(1L, RoleName.ROLE_USER);
 
         // Then
-        Assertions.assertThat(role.getRoleName())
+        assertThat(role.getRoleName())
                 .isEqualTo(RoleName.ROLE_USER);
 
         // And
-        Assertions.assertThat(role.getId())
+        assertThat(role.getId())
                 .isNotNull();
     }
 }

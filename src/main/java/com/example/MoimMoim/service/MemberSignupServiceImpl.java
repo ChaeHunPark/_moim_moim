@@ -4,6 +4,7 @@ import com.example.MoimMoim.domain.Role;
 import com.example.MoimMoim.enums.RoleName;
 import com.example.MoimMoim.exception.member.DuplicateNicknameException;
 import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
+import com.example.MoimMoim.exception.member.RoleNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.dto.member.MemberSignUpRequestDTO;
@@ -51,7 +52,7 @@ public class MemberSignupServiceImpl implements MemberSignupService {
     // role 검증
     public Role validateRole(RoleName roleName) {
         return roleRepository.findByRoleName(roleName)
-                .orElseThrow(() -> new RuntimeException("해당 권한은 존재하지 않습니다."));
+                .orElseThrow(() -> new RoleNotFoundException("해당 권한은 존재하지 않습니다."));
     }
 
 
