@@ -65,9 +65,7 @@ public class PostController {
             @RequestParam(name = "searchBy", defaultValue = "title") String searchBy// "title", "content", "title+content"
     ) {
 
-        Pageable pageable = PageRequest.of(page-1, size);
-
-        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, pageable, keyword, searchBy);
+        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, keyword, searchBy, page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }

@@ -59,7 +59,6 @@ class MemberRepositoryTest {
                 .role(role)
                 .signupDate(LocalDateTime.now())
                 .build();
-        savedMember = memberRepository.save(member); // 저장
     }
 
 
@@ -128,8 +127,8 @@ class MemberRepositoryTest {
                 .name("John Doe")
                 .gender(Gender.MALE)
                 .nickname("johnny")
-                .birthday(LocalDate.of(1990, 1, 1))
-                .role(role)
+                .birthday(LocalDate.of(1990, 1, 1))                .role(role)
+
                 .signupDate(LocalDateTime.now())
                 .build();
 

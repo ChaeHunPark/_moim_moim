@@ -6,8 +6,6 @@ import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
 import com.example.MoimMoim.dto.moim.MoimParticipationResponseDTO;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.enums.ParticipationStatus;
-import com.example.MoimMoim.exception.member.EmailAlreadyExistsException;
-import com.example.MoimMoim.exception.member.MemberAlreadyExistsException;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.moim.*;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
@@ -15,7 +13,7 @@ import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimAccptedMemberRepository;
 import com.example.MoimMoim.repository.MoimParticipationRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
-import com.example.MoimMoim.service.utilService.PostUtilService;
+import com.example.MoimMoim.service.utilService.DateTimeUtilService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +28,17 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
     private final MoimPostRepository moimPostRepository;
     private final MemberRepository memberRepository;
     private final MoimParticipationRepository moimParticipationRepository;
-    private final PostUtilService postUtilService;
+    private final DateTimeUtilService dateTimeUtilService;
     private final JPAQueryFactory jpaQueryFactory;
     private final MoimAccptedMemberRepository moimAccptedMemberRepository;
 
 
     @Autowired
-    public MoimParticipationServiceImpl(MoimPostRepository moimPostRepository, MemberRepository memberRepository, MoimParticipationRepository moimParticipationRepository, PostUtilService postUtilService, JPAQueryFactory jpaQueryFactory, MoimAccptedMemberRepository moimAccptedMemberRepository) {
+    public MoimParticipationServiceImpl(MoimPostRepository moimPostRepository, MemberRepository memberRepository, MoimParticipationRepository moimParticipationRepository, DateTimeUtilService dateTimeUtilService, JPAQueryFactory jpaQueryFactory, MoimAccptedMemberRepository moimAccptedMemberRepository) {
         this.moimPostRepository = moimPostRepository;
         this.memberRepository = memberRepository;
         this.moimParticipationRepository = moimParticipationRepository;
-        this.postUtilService = postUtilService;
+        this.dateTimeUtilService = dateTimeUtilService;
         this.jpaQueryFactory = jpaQueryFactory;
         this.moimAccptedMemberRepository = moimAccptedMemberRepository;
     }
@@ -106,14 +104,14 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                 .nickname(moimParticipation.getMember().getNickname())
                 .intro(moimParticipation.getIntro())
                 .reasonParticipation(moimParticipation.getReasonParticipation())
-                .moimDate(postUtilService.formatForClient(moimPost.getMoimDate()))
+                .moimDate(dateTimeUtilService.formatForClient(moimPost.getMoimDate()))
                 .moimStatus(moimPost.getMoimStatus())
                 .ParticipationStatus(moimParticipation.getParticipationStatus())
-                .createdAt(postUtilService.formatForClient(moimParticipation.getCreatedAt()))
+                .createdAt(dateTimeUtilService.formatForClient(moimParticipation.getCreatedAt()))
                 .build();
 
         if(moimParticipation.getUpdatedAt() != null){
-            moimParticipationResponseDTO.setUpdatedAt(postUtilService.formatForClient(LocalDateTime.now()));
+            moimParticipationResponseDTO.setUpdatedAt(dateTimeUtilService.formatForClient(LocalDateTime.now()));
         }
 
         return moimParticipationResponseDTO;

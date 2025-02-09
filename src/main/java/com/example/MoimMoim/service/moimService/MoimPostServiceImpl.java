@@ -11,7 +11,7 @@ import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
-import com.example.MoimMoim.service.utilService.PostUtilService;
+import com.example.MoimMoim.service.utilService.DateTimeUtilService;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -32,14 +32,14 @@ import java.util.stream.Collectors;
 public class MoimPostServiceImpl implements MoimPostService{
 
     private final MemberRepository memberRepository;
-    private final PostUtilService postUtilService;
+    private final DateTimeUtilService dateTimeUtilService;
     private final MoimPostRepository moimPostRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Autowired
-    public MoimPostServiceImpl(MemberRepository memberRepository, PostUtilService postUtilService, MoimPostRepository moimPostRepository, JPAQueryFactory jpaQueryFactory) {
+    public MoimPostServiceImpl(MemberRepository memberRepository, DateTimeUtilService dateTimeUtilService, MoimPostRepository moimPostRepository, JPAQueryFactory jpaQueryFactory) {
         this.memberRepository = memberRepository;
-        this.postUtilService = postUtilService;
+        this.dateTimeUtilService = dateTimeUtilService;
         this.moimPostRepository = moimPostRepository;
         this.jpaQueryFactory = jpaQueryFactory;
     }
@@ -48,9 +48,16 @@ public class MoimPostServiceImpl implements MoimPostService{
         return address.split(" ")[0];
     }
 
+    private Member findMember (Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
+    }
+
+
+
     private MoimPost convertMoimPost(MoimPostRequestDTO moimPostRequestDTO){
         return MoimPost.builder()
-                .member(postUtilService.findMember(moimPostRequestDTO.getMemberId(), memberRepository))
+                .member(findMember(moimPostRequestDTO.getMemberId()))
                 .title(moimPostRequestDTO.getTitle())
                 .category(moimPostRequestDTO.getCategory())
                 .content(moimPostRequestDTO.getContent())
@@ -94,7 +101,7 @@ public class MoimPostServiceImpl implements MoimPostService{
                         comment.getMember().getMemberId(),
                         comment.getContent(),
                         comment.getMember().getNickname(),
-                        postUtilService.formatForClient(comment.getCreateAt())
+                        dateTimeUtilService.formatForClient(comment.getCreateAt())
                 )).collect(Collectors.toList());
 
 
@@ -114,14 +121,14 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .category(moimPost.getCategory())
                 .moimStatus(moimPost.getMoimStatus())
                 .viewCount(moimPost.getViewCount())
-                .moimDate(postUtilService.formatForClient(moimPost.getMoimDate()))
-                .createdAt(postUtilService.formatForClient(moimPost.getCreatedAt()))
+                .moimDate(dateTimeUtilService.formatForClient(moimPost.getMoimDate()))
+                .createdAt(dateTimeUtilService.formatForClient(moimPost.getCreatedAt()))
                 .moimCommentList(comments)
                 .build();
 
         // 업데이트가 null 일수도 있다.
         if(moimPostResponseDTO.getUpdateAt() != null){
-            moimPostResponseDTO.setUpdateAt(postUtilService.formatForClient(moimPost.getUpdateAt()));
+            moimPostResponseDTO.setUpdateAt(dateTimeUtilService.formatForClient(moimPost.getUpdateAt()));
         }
 
 
@@ -217,7 +224,7 @@ public class MoimPostServiceImpl implements MoimPostService{
                     postResponseDTO.setPostId(post.getMoimPostId());  // 게시글 ID
                     postResponseDTO.setTitle(post.getTitle()); // 게시글 제목
                     postResponseDTO.setCategory(post.getCategory()); // 카테고리
-                    postResponseDTO.setCreateAt(postUtilService.formatForClient(post.getCreatedAt())); // 날짜 포맷
+                    postResponseDTO.setCreateAt(dateTimeUtilService.formatForClient(post.getCreatedAt())); // 날짜 포맷
                     postResponseDTO.setNickname(post.getMember().getNickname()); // 작성자 닉네임
                     postResponseDTO.setCommentCount(commentCount); // 댓글 수
                     postResponseDTO.setViewCount(post.getViewCount()); // 조회 수
@@ -225,7 +232,7 @@ public class MoimPostServiceImpl implements MoimPostService{
                     postResponseDTO.setCurrentParticipants(post.getCurrentParticipants());
                     postResponseDTO.setMaxParticipants(post.getMaxParticipants());
                     postResponseDTO.setMoimStatus(post.getMoimStatus());
-                    postResponseDTO.setMoimDate(postUtilService.formatForClient(post.getMoimDate()));
+                    postResponseDTO.setMoimDate(dateTimeUtilService.formatForClient(post.getMoimDate()));
                     postResponseDTO.setRegion(post.getRegion());
 
                     return postResponseDTO;
