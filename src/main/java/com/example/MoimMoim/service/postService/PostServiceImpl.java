@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -82,15 +83,22 @@ public class PostServiceImpl implements PostService{
         post.incrementViewCount();
         postRepository.save(post);
 
-        // 댓글리스트 조회
-        List<CommentResponseDTO> comments = post.getComments().stream()
-                .map(comment -> new CommentResponseDTO(
-                        comment.getCommentId(),
-                        comment.getMember().getMemberId(),
-                        comment.getContent(),
-                        comment.getMember().getNickname(),
-                        dateTimeUtilService.formatForClient(comment.getCreateAt())))
-                .collect(Collectors.toList());
+        // 댓글리스트 생성
+        List<CommentResponseDTO> comments = new ArrayList<>();
+
+        // 댓글이 있으면 변환
+        if(post.getComments() != null) {
+            comments = post.getComments().stream()
+                    .map(comment -> new CommentResponseDTO(
+                            comment.getCommentId(),
+                            comment.getMember().getMemberId(),
+                            comment.getContent(),
+                            comment.getMember().getNickname(),
+                            dateTimeUtilService.formatForClient(comment.getCreateAt())))
+                    .collect(Collectors.toList());
+        }
+
+
 
 
         PostResponseDTO postResponseDTO = PostResponseDTO.builder()
@@ -140,9 +148,10 @@ public class PostServiceImpl implements PostService{
         // 2. 게시글 수정
         post.setTitle(postRequestDTO.getTitle());
         post.setCategory(postRequestDTO.getCategory());
-        post.setContent(post.getContent());
+        post.setContent(postRequestDTO.getContent());
         post.setUpdateAt(LocalDateTime.now());
 
+        postRepository.save(post);
     }
 
     @Transactional

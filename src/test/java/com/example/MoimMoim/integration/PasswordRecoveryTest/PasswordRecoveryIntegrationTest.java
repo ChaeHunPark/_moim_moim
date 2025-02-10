@@ -40,8 +40,8 @@ public class PasswordRecoveryIntegrationTest {
 
     String email = "cogns8571@naver.com";
     String name = "홍길동";
-    String password = "QWer123@";
-    String newPassword = "Test123@";
+    String password = "QWer123@@@";
+    String newPassword = "Test123@@!#";
 
     final String CODE = "123456";
 
@@ -63,7 +63,7 @@ public class PasswordRecoveryIntegrationTest {
 
 
     @BeforeEach
-    void setup() throws Exception {
+     void setup() throws Exception {
         //given
         String requestBody = """
                 {
@@ -113,7 +113,7 @@ public class PasswordRecoveryIntegrationTest {
 
         String requestBody_resetPassword = """
                 {
-                    "email" : "cogns8571@naver.com",
+                    "email" : "%s",
                     "newPassword" : "%s"
                 }
                 
