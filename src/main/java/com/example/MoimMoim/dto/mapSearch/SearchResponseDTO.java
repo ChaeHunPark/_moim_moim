@@ -8,5 +8,5 @@ import java.util.List;
 @Getter
 @Setter
 public class SearchResponseDTO {
-    private List<SearchRequestDTO> items;
+    List<SearchRequestDTO> items;
 }

@@ -15,13 +15,10 @@ public interface MoimPostService {
 
     MoimPostResponseDTO viewMoimPost(Long postId);
 
-    List<MoimPostSummaryResponseDTO> getPostList(String category,
-                                                 String sortBy,
-                                                 Pageable pageable,
-                                                 String keyword,
-                                                 String searchBy,
-                                                 String region,
-                                                 String moimStatus);
+
+    List<MoimPostSummaryResponseDTO> getPostList(
+            String category, String sortBy, String keyword, String searchBy,
+            String region, String moimStatus, int page, int size);
 
     // 게시글 수정
     void updatePost(Long moimPostId, MoimPostRequestDTO requestDTO);

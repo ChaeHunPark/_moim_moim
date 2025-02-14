@@ -13,9 +13,10 @@ import java.util.List;
 @Setter
 public class MoimPostResponseDTO {
     private Long memberId; // 작성자 ID
+    private Long moimPostId;
     private String title; // 제목
     private String content; // 내용
-    private String location;
+    private String location; // 장소
     private String address; // 주소
     private String roadAddress; // 도로명 주소
     private String region;

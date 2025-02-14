@@ -51,6 +51,6 @@ public class MoimPostCommentController {
     public ResponseEntity<?> deleteComment(@PathVariable("moimCommentId") Long moimCommentId,
                                            @Valid @RequestBody MoimCommentRequestDTO moimCommentRequestDTO) {
         moimCommentService.deleteComment(moimCommentRequestDTO, moimCommentId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("댓글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("댓글 삭제가 완료되었습니다.");
     }
 }

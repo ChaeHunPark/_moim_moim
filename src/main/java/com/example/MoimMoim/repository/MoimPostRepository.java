@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface MoimPostRepository extends JpaRepository<MoimPost, Long> {
+public interface MoimPostRepository extends JpaRepository<MoimPost, Long>,MoimPostRepositoryCustom {
     // moimPostId와 member로 게시글 조회
     Optional<MoimPost> findByMoimPostIdAndMember(Long moimPostId, Member member);
 }

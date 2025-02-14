@@ -51,8 +51,8 @@ public class MapSearchServiceImpl implements MapSearchService {
                 .build();
 
         SearchResponseDTO searchRequestDTO = webClient.get()
-                .uri(uri)//uri 요청 경로
-                .retrieve()//응답을 가져오는 메서드
+                .uri(uri) //uri 요청 경로
+                .retrieve() //응답을 가져오는 메서드
                 .onStatus(HttpStatusCode::is4xxClientError,
                         res -> Mono.error(new ClientErrorException("클라이언트 오류가 발생하였습니다.")))
                 .onStatus(HttpStatusCode::is5xxServerError,

@@ -5,26 +5,23 @@ import com.example.MoimMoim.dto.moim.MoimCommentResponseDTO;
 import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
 import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
 import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
-import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
 import com.example.MoimMoim.service.utilService.DateTimeUtilService;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -94,8 +91,10 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPost.incrementViewCount();
         moimPostRepository.save(moimPost);
 
+        List<MoimCommentResponseDTO> comments = new ArrayList<>();
 
-        List<MoimCommentResponseDTO> comments = moimPost.getMoimComments().stream()
+        if (moimPost.getMoimComments() != null ) {
+            comments = moimPost.getMoimComments().stream()
                 .map(comment -> new MoimCommentResponseDTO(
                         comment.getMoimCommentId(),
                         comment.getMember().getMemberId(),
@@ -103,11 +102,13 @@ public class MoimPostServiceImpl implements MoimPostService{
                         comment.getMember().getNickname(),
                         dateTimeUtilService.formatForClient(comment.getCreateAt())
                 )).collect(Collectors.toList());
+        }
 
 
 
         MoimPostResponseDTO moimPostResponseDTO = MoimPostResponseDTO.builder()
                 .memberId(moimPost.getMember().getMemberId())
+                .moimPostId(moimPost.getMoimPostId())
                 .title(moimPost.getTitle())
                 .content(moimPost.getContent())
                 .location(moimPost.getLocation())
@@ -127,7 +128,7 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .build();
 
         // 업데이트가 null 일수도 있다.
-        if(moimPostResponseDTO.getUpdateAt() != null){
+        if(moimPost.getUpdateAt() != null){
             moimPostResponseDTO.setUpdateAt(dateTimeUtilService.formatForClient(moimPost.getUpdateAt()));
         }
 
@@ -139,105 +140,13 @@ public class MoimPostServiceImpl implements MoimPostService{
     }
 
     @Override
-    public List<MoimPostSummaryResponseDTO> getPostList(String category,
-                                                        String sortBy,
-                                                        Pageable pageable,
-                                                        String keyword,
-                                                        String searchBy,
-                                                        String region,
-                                                        String moimStatus) {
-        QMoimPost moimPost = QMoimPost.moimPost;
-        QMoimPostComment moimPostComment = QMoimPostComment.moimPostComment;
+    public List<MoimPostSummaryResponseDTO> getPostList(
+            String category, String sortBy, String keyword, String searchBy,
+            String region, String moimStatus, int page, int size) {
 
-        JPAQuery<Tuple> query = jpaQueryFactory.select(
-                        moimPost,                            // 게시글 정보
-                        moimPostComment.count()                  // 댓글 개수
-                )
-                .from(moimPost)
-                .leftJoin(moimPost.moimComments, moimPostComment)   // 게시글과 댓글 조인
-                .groupBy(moimPost.moimPostId);                   // 게시글 ID 기준으로 그룹화
+        Pageable pageable = createPageable(page - 1, size);
 
-
-        BooleanBuilder whereClause = new BooleanBuilder();
-
-
-        // 1. 카테고리가 있으면 카테고리를 필터링한다.
-        if (category != null && !category.isEmpty()){
-            whereClause.and(moimPost.category.eq(Category.valueOf(category)));
-        }
-        // 2. 행정구역 있으면 필터링 한다.
-        if (region != null && !region.isEmpty()) {
-            whereClause.and(moimPost.region.eq(region));
-        }
-
-        // 3. 모임 상태 별 필터링
-        if(moimStatus != null && !moimStatus.isEmpty()){
-            whereClause.and(moimPost.moimStatus.eq(MoimStatus.valueOf(moimStatus)));
-        }
-
-        // 2. 검색 조건, keyword가 존재해야 실행
-        if(keyword != null && !keyword.isBlank()){
-            switch (searchBy) {
-                case "title":
-                    whereClause.and(moimPost.title.containsIgnoreCase(keyword)); // %title%
-                    break;
-                case "content":
-                    whereClause.and(moimPost.content.containsIgnoreCase(keyword));
-                    break;
-                case "title+content": // 제목과 내용 모두에서 검색
-                    whereClause.and(moimPost.title.containsIgnoreCase(keyword)
-                                    .or(moimPost.content.containsIgnoreCase(keyword))
-                    );
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid searchBy parameter: " + searchBy);
-            }
-        }
-
-        query.where(whereClause);
-
-
-        // 2.정렬 기준 (옵션),(댓글순, 조회수순)
-        if ("date-asc".equalsIgnoreCase(sortBy)){
-            query.orderBy(moimPost.createdAt.asc());
-        } else if("date-desc".equalsIgnoreCase(sortBy)){
-            query.orderBy(moimPost.createdAt.desc());
-        } else if ("views".equalsIgnoreCase(sortBy)){
-            query.orderBy(moimPost.viewCount.desc());
-        } else if ("comment".equalsIgnoreCase(sortBy)){
-            query.orderBy(moimPostComment.count().desc());
-        }
-
-        //반환사이즈 조정
-        List<Tuple> results = query
-                .offset(pageable.getOffset())// pageable에 page값이 1이 들어가면 (1 - 1) * size로 계산 = 0부터
-                .limit(pageable.getPageSize()) // 40개씩
-                .fetch();
-
-        return results.stream()
-                .map(tuple -> {
-                    MoimPost post = tuple.get(moimPost);          // 게시글 엔티티
-                    long commentCount = Optional.ofNullable(tuple.get(moimPostComment.count())).orElse(0L);;// 댓글 수 0일 경우 0을 반환
-
-                    // DTO 변환
-                    MoimPostSummaryResponseDTO postResponseDTO = new MoimPostSummaryResponseDTO();
-                    postResponseDTO.setPostId(post.getMoimPostId());  // 게시글 ID
-                    postResponseDTO.setTitle(post.getTitle()); // 게시글 제목
-                    postResponseDTO.setCategory(post.getCategory()); // 카테고리
-                    postResponseDTO.setCreateAt(dateTimeUtilService.formatForClient(post.getCreatedAt())); // 날짜 포맷
-                    postResponseDTO.setNickname(post.getMember().getNickname()); // 작성자 닉네임
-                    postResponseDTO.setCommentCount(commentCount); // 댓글 수
-                    postResponseDTO.setViewCount(post.getViewCount()); // 조회 수
-
-                    postResponseDTO.setCurrentParticipants(post.getCurrentParticipants());
-                    postResponseDTO.setMaxParticipants(post.getMaxParticipants());
-                    postResponseDTO.setMoimStatus(post.getMoimStatus());
-                    postResponseDTO.setMoimDate(dateTimeUtilService.formatForClient(post.getMoimDate()));
-                    postResponseDTO.setRegion(post.getRegion());
-
-                    return postResponseDTO;
-                })
-                .collect(Collectors.toList());
+        return moimPostRepository.getPostList(category, sortBy, pageable, keyword, searchBy, region, moimStatus);
     }
 
     @Transactional
@@ -249,8 +158,8 @@ public class MoimPostServiceImpl implements MoimPostService{
         MoimPost moimPost = moimPostRepository.findByMoimPostIdAndMember(moimPostId, member)
                 .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
 
-        moimPost.setTitle(moimPost.getTitle());
-        moimPost.setContent(moimPost.getContent());
+        moimPost.setTitle(requestDTO.getTitle());
+        moimPost.setContent(requestDTO.getContent());
         moimPost.setLocation(requestDTO.getLocation());
         moimPost.setAddress(requestDTO.getAddress());
         moimPost.setRoadAddress(requestDTO.getRoadAddress());
@@ -260,6 +169,8 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPost.setCategory(requestDTO.getCategory());
         moimPost.setMoimDate(requestDTO.getMoimDate());
         moimPost.setUpdateAt(LocalDateTime.now());
+
+        moimPostRepository.save(moimPost);
     }
 
     @Transactional
@@ -272,6 +183,17 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
         moimPostRepository.delete(moimPost);
 
+    }
+
+    // Pageable 유효성 검사 메서드
+    public Pageable createPageable(int page, int size) {
+        // offset이 -1인 경우, 0으로 변경
+        int correctedPage = (page < 0) ? 0 : page;
+
+        // size가 30이나 60이 아닌 경우, 30으로 설정
+        int correctedSize = (size == 30 || size == 60) ? size : 30;
+
+        return PageRequest.of(correctedPage, correctedSize);
     }
 
 
