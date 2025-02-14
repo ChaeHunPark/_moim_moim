@@ -80,7 +80,7 @@ public class MoimParticipationController {
     }
 
     //수락한 사람 조회
-    @GetMapping("/{moimPostId}/accepted-participants")
+    @GetMapping("/accepted-participants/{moimPostId}")
     public ResponseEntity<List<MoimParticipationListResponseDTO>> getAcceptedParticipants(
             @PathVariable("moimPostId") Long moimPostId) {
         List<MoimParticipationListResponseDTO> acceptedParticipants =
@@ -89,7 +89,7 @@ public class MoimParticipationController {
     }
 
     //거절한 사람 조회
-    @GetMapping("/{moimPostId}/rejected-participants")
+    @GetMapping("/rejected-participants/{moimPostId}")
     public ResponseEntity<List<MoimParticipationListResponseDTO>> getRejectedParticipants(
             @PathVariable("moimPostId") Long moimPostId) {
         List<MoimParticipationListResponseDTO> rejectedParticipants =

@@ -172,6 +172,8 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         List<MoimParticipation> moimParticipations = moimParticipationRepository.findByMember(member);
 
 
+
+
         return moimParticipations.stream().map(participation -> new MoimParticipationListResponseDTO(
                         participation.getMoimParticipationRequestId(),
                         participation.getMoimPost().getMoimPostId(),
@@ -268,8 +270,10 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         MoimParticipation participation = moimParticipationRepository.findById(participationId)
                 .orElseThrow(() -> new ParticipationNotFoundException("참여 신청을 찾을 수 없습니다."));
 
+        Long getOwnerId = participation.getMoimPost().getMember().getMemberId();
+
         // 해당 모임이 신청자의 모임 게시글이 아니면 에러 처리
-        if (!participation.getMoimPost().getMember().getMemberId().equals(ownerId)) {
+        if (!getOwnerId.equals(ownerId)) {
             throw new MoimOwnerMismatchException("이 모임의 주최자가 아닙니다.");
         }
 
@@ -295,10 +299,10 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                         moimPost.moimPostId, // 모임 고유 ID
                         moimPost.region, // 지역
                         moimPost.category, // 카테고리 이름
-                        moimPost.moimDate, // 모임 날짜
+                        moimPost.moimDate.stringValue(), // 모임 날짜
                         member.nickname, // 신청자 닉네임
                         participation.participationStatus, // 참여 상태
-                        participation.createdAt)) // 신청 생성 시간
+                        participation.createdAt.stringValue())) // 신청 생성 시간
                 .from(acceptedMember)
                 .join(acceptedMember.moimParticipation, participation)  // MoimParticipation과 조인
                 .join(participation.moimPost, moimPost)  // MoimPost와 조인

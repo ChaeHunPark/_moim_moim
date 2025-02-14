@@ -266,7 +266,55 @@ public class MoimParticipationIntegrationTest {
 
     @Test
     @Order(4)
-    @DisplayName("모임 신청")
+    @DisplayName("(host) 신청 받은 모임 리스트 조회, 빈 리스트 반환")
+    void receivedParticipantsListisEmpty() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/received-participation/{ownerId}",
+                        hostMember.getMemberId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", hostAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isZero();
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("(participant) 신청한 목록 조회, 빈 리스트 반환")
+    void getMyParticipationListIsEmpty() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/my-participation/{memberId}", participantMember.getMemberId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        log.info("contentAsString : {}", contentAsString);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isZero();
+
+    }
+
+
+
+    @Test
+    @Order(6)
+    @DisplayName("(participant) 모임 신청")
     void applyForMoim() throws Exception {
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -290,8 +338,29 @@ public class MoimParticipationIntegrationTest {
     }
 
     @Test
-    @Order(5)
-    @DisplayName("(host) 신청 받은 모임 리스트 조회")
+    @Order(7)
+    @DisplayName("(participant) 모임 신청 Exception -> '이미 신청한 모임입니다'")
+    void applyForMoimBadRequest() throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        moimParticipationRequestDTO.setIntro("참여 신청 소개");
+        moimParticipationRequestDTO.setReasonParticipation("참여 신청 이유");
+
+        mockMvc.perform(post("/api/participation/apply")
+                        .param("moimPostId", String.valueOf(postId))
+                        .param("memberId", String.valueOf(participantMember.getMemberId()))
+                        .content(objectMapper.writeValueAsString(moimParticipationRequestDTO))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("이미 신청한 모임입니다."));
+
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("(host) 신청 받은 모임 리스트 조회, 한건 조회")
     void receivedParticipantsList() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -313,7 +382,7 @@ public class MoimParticipationIntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(9)
     @DisplayName("(host) 신청 받은 모임 단건 조회")
     void receivedParticipant() throws Exception {
 
@@ -340,7 +409,114 @@ public class MoimParticipationIntegrationTest {
         assertThat(intro).isEqualTo("참여 신청 소개");
         assertThat(reasonParticipation).isEqualTo("참여 신청 이유");
         assertThat(participationStatus).isEqualTo(ParticipationStatus.PENDING.toString());
+    }
 
+    @Test
+    @Order(10)
+    @DisplayName("(participant) 신청한 목록 조회, 한건 조회")
+    void getMyParticipationList() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/my-participation/{memberId}", participantMember.getMemberId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        log.info("contentAsString : {}", contentAsString);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isOne();
 
     }
+
+    @Test
+    @Order(11)
+    @DisplayName("(host) 특정 모임에 수락한 목록 조회, 빈 리스트 반환")
+    void getAcceptParticipationIsEmpty() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/accepted-participants/{moimPostId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isZero();
+
+    }
+
+    @Test
+    @Order(12)
+    @DisplayName("(host) 특정 모임에 거절한 목록 조회, 빈 리스트 반환")
+    void getRejectedParticipationIsEmpty() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/rejected-participants/{moimPostId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isZero();
+
+    }
+
+
+    @Test
+    @Order(13)
+    @DisplayName("(host) 신청 수락")
+    void acceptParticipation() throws Exception {
+
+        mockMvc.perform(post("/api/participation/accept/{participationId}", participationId)
+                .param("ownerId", String.valueOf(hostMember.getMemberId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string("참여 신청이 수락되었습니다."));
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("(host) 특정 모임에 수락한 목록 조회, 1개 반환")
+    void getAcceptParticipation() throws Exception {
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/participation/accepted-participants/{moimPostId}", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", participantAuthToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+                });
+
+        assertThat(participationList.size()).isOne();
+
+    }
+
+
 }
