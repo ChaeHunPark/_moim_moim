@@ -16,6 +16,7 @@ import com.example.MoimMoim.repository.MoimPostRepository;
 import com.example.MoimMoim.service.utilService.DateTimeUtilService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -136,7 +137,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         // 2-1 신청 정보의 id와 member의 id가 다른가?
         if (!moimParticipation.getMember().getMemberId().equals(memberId)){
             throw new MemberInfoMismatchException("회원 정보가 일치하지 않습니다.");
-        }// Exception 고치기
+        }
 
 
         return createMoimParticipationResponseDTO(moimParticipation, moimPost);
@@ -156,9 +157,9 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         }
 
         // 2-1 모임 포스트 작성자의 id와 ownerId의 id가 다른가?
-        if (moimPost.getMember().getMemberId().equals(ownerId)){
+        if (!moimPost.getMember().getMemberId().equals(ownerId)){
             throw new MemberInfoMismatchException("회원 정보가 일치하지 않습니다.");
-        }// Exception 고치기
+        }
 
 
         return createMoimParticipationResponseDTO(moimParticipation, moimPost);
@@ -198,7 +199,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                             moimPost.moimPostId,
                             moimPost.region,
                             moimPost.category,
-                            moimPost.moimDate,
+                            moimPost.moimDate.stringValue(),
                             participation.member.nickname,
                             participation.participationStatus,
                             participation.createdAt.stringValue()
@@ -218,6 +219,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         }
     }
 
+    @Transactional
     @Override
     public void acceptParticipation(Long participationId, Long ownerId) {
         MoimParticipation participation = moimParticipationRepository.findById(participationId)
