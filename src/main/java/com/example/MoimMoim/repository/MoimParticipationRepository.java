@@ -16,4 +16,7 @@ public interface MoimParticipationRepository extends JpaRepository<MoimParticipa
     // Member 기준으로 찾는다.
     List<MoimParticipation> findByMember(Member member);
 
+    // MoimPost 기준으로 찾는다.
+    List<MoimParticipation> findByMoimPost(MoimPost moimPost);
+
 }

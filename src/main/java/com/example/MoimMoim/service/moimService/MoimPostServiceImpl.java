@@ -6,9 +6,12 @@ import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
 import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
 import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
 import com.example.MoimMoim.enums.MoimStatus;
+import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
+import com.example.MoimMoim.repository.MoimAccptedMemberRepository;
+import com.example.MoimMoim.repository.MoimParticipationRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
 import com.example.MoimMoim.service.utilService.DateTimeUtilService;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,14 +34,16 @@ public class MoimPostServiceImpl implements MoimPostService{
     private final MemberRepository memberRepository;
     private final DateTimeUtilService dateTimeUtilService;
     private final MoimPostRepository moimPostRepository;
-    private final JPAQueryFactory jpaQueryFactory;
+    private final MoimParticipationRepository moimParticipationRepository;
+    private final MoimAccptedMemberRepository moimAccptedMemberRepository;
 
     @Autowired
-    public MoimPostServiceImpl(MemberRepository memberRepository, DateTimeUtilService dateTimeUtilService, MoimPostRepository moimPostRepository, JPAQueryFactory jpaQueryFactory) {
+    public MoimPostServiceImpl(MemberRepository memberRepository, DateTimeUtilService dateTimeUtilService, MoimPostRepository moimPostRepository, MoimParticipationRepository moimParticipationRepository, JPAQueryFactory jpaQueryFactory, MoimAccptedMemberRepository moimAccptedMemberRepository) {
         this.memberRepository = memberRepository;
         this.dateTimeUtilService = dateTimeUtilService;
         this.moimPostRepository = moimPostRepository;
-        this.jpaQueryFactory = jpaQueryFactory;
+        this.moimParticipationRepository = moimParticipationRepository;
+        this.moimAccptedMemberRepository = moimAccptedMemberRepository;
     }
 
     private String extractRegionFromData(String address){
@@ -67,10 +72,11 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .maxParticipants(moimPostRequestDTO.getMaxParticipants())
                 .currentParticipants(1)
                 .moimDate(moimPostRequestDTO.getMoimDate())
-                .moimStatus(MoimStatus.모집중)
+                .moimStatus(MoimStatus.RECRUITING)
                 .createdAt(LocalDateTime.now())
                 .updateAt(null)
                 .viewCount(0L)
+                .cancellationReason(null)
                 .build();
     }
 
@@ -171,6 +177,37 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPost.setUpdateAt(LocalDateTime.now());
 
         moimPostRepository.save(moimPost);
+    }
+
+    @Override
+    public void cancellationMoimPost(Long moimPostId, String reason) {
+
+        MoimPost moimPost = moimPostRepository.findById(moimPostId)
+                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
+
+        // 1. 포스트 취소 상태로 변경
+        moimPost.setMoimStatus(MoimStatus.CANCELED);
+        moimPost.setCancellationReason(reason);
+
+        moimPostRepository.save(moimPost);
+
+        // 2. 모임 신청자들의 상태 변경
+        List<MoimParticipation> participationList = moimParticipationRepository.findByMoimPost(moimPost);
+
+        // 거절한 사람은 상태 변경이 필요없음.
+        for (MoimParticipation participation : participationList) {
+            if(participation.getParticipationStatus() != ParticipationStatus.REJECTED) {
+                participation.setParticipationStatus(ParticipationStatus.CANCELED);
+            }
+        }
+
+        moimParticipationRepository.saveAll(participationList);
+
+        // 3. 수락된 신청자들 조회해서 삭제
+        List<MoimAccptedMember> acceptMemberList = moimAccptedMemberRepository.findByMoimParticipationIn(participationList);
+
+        moimAccptedMemberRepository.deleteAllInBatch(acceptMemberList);
+
     }
 
     @Transactional

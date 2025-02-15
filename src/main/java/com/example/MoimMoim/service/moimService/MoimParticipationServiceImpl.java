@@ -71,7 +71,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                 .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
 
 
-        if (moimPost.getMoimStatus() == MoimStatus.인원마감) {
+        if (moimPost.getMoimStatus() == MoimStatus.FULL) {
             throw new MoimMaxParticipantsReachedException("인원이 마감되었습니다.");
         }
         /*
@@ -321,4 +321,8 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
     public List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId) {
         return getParticipantsByStatus(moimPostId, ParticipationStatus.REJECTED);
     }
+
+
+
+    // 모임 취소
 }

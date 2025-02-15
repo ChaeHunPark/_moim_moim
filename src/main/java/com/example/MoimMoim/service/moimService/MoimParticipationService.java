@@ -39,4 +39,5 @@ public interface MoimParticipationService {
 
     // 5-1.거절한 사람 조회
     List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId);
+
 }

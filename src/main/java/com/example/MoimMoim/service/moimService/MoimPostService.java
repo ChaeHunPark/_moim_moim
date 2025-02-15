@@ -25,4 +25,7 @@ public interface MoimPostService {
 
     // 게시글 삭제
     void deletePost(Long moimPostId, Long memberId);
+
+    //모임 취소
+    void cancellationMoimPost(Long moimPostId, String reason);
 }

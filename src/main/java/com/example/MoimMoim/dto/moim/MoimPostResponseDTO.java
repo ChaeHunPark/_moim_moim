@@ -31,4 +31,6 @@ public class MoimPostResponseDTO {
     private String createdAt; // 생성 날짜
     private String updateAt;
     private List<MoimCommentResponseDTO> moimCommentList;
+
+    private String cancellationReason; // 취소 이유
 }

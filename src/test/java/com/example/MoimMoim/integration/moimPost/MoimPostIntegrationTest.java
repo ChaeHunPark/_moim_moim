@@ -6,6 +6,8 @@ import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.enums.Category;
+import com.example.MoimMoim.enums.MoimStatus;
+import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -313,6 +315,23 @@ public class MoimPostIntegrationTest {
 
     @Test
     @Order(8)
+    @DisplayName("모임 취소")
+    void cancelMoimPost() throws Exception {
+        mockMvc.perform(delete("/api/moim-post/cancellation/{moimPostId}", firstItemPostId)
+                        .param("reason", "취소되었습니다.")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authToken))
+                .andExpect(status().isOk())
+                .andExpect(content().string("모임 취소가 완료되었습니다."));
+
+        MoimPost moimPost = moimPostRepository.findById(firstItemPostId).orElseThrow(() -> new PostNotFoundException(""));
+
+        assertThat(moimPost.getMoimStatus()).isEqualTo(MoimStatus.CANCELED);
+
+    }
+
+    @Test
+    @Order(9)
     @DisplayName("게시글 삭제")
     void testPostDelete() throws Exception {
         mockMvc.perform(delete("/api/moim-post/moim-post-id/{moimPostId}",firstItemPostId)
@@ -327,6 +346,7 @@ public class MoimPostIntegrationTest {
         assertThat(getPost).isEmpty();
 
     }
+
 
 
 }

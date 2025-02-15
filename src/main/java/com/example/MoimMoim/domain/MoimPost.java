@@ -78,6 +78,8 @@ public class MoimPost {
     @OneToMany(mappedBy = "moimPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MoimPostComment> moimComments;
 
+    private String cancellationReason; // 취소 이유 (nullable)
+
     public void incrementViewCount() {
         this.viewCount++;
     }

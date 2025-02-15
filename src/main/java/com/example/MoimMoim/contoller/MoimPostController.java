@@ -84,6 +84,20 @@ public class MoimPostController {
         return ResponseEntity.status(HttpStatus.OK).body("게시글 수정이 완료되었습니다.");
     }
 
+    // 모임 취소 -> 수락목록 회원 삭제
+    @DeleteMapping("/cancellation/{moimPostId}")
+    public ResponseEntity<?> cancelMoimPost(
+            @PathVariable("moimPostId") Long moimPostId,
+            @RequestParam("reason") String reason) {
+
+        // 모임 게시글 취소 처리
+        moimPostService.cancellationMoimPost(moimPostId, reason);
+
+        return ResponseEntity.status(HttpStatus.OK).body("모임 취소가 완료되었습니다.");
+    }
+
+
+
     // 게시글 삭제
     @DeleteMapping("/moim-post-id/{moimPostId}")
     public ResponseEntity<String> deletePost(
