@@ -247,6 +247,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
 
         // 상태를 '수락'으로 변경
         participation.setParticipationStatus(ParticipationStatus.ACCEPTED);
+        participation.setUpdatedAt(LocalDateTime.now());
         moimParticipationRepository.save(participation);  // 상태 업데이트
 
         // 참여자를 늘린다.
@@ -283,6 +284,7 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         // 상태를 '거절'로 변경하고 거절 이유를 설정
         participation.setParticipationStatus(ParticipationStatus.REJECTED);
         participation.setRejection_reason(rejectionReason);  // 거절 이유 저장
+        participation.setUpdatedAt(LocalDateTime.now());
         moimParticipationRepository.save(participation);  // 상태 및 거절 이유 업데이트
     }
 

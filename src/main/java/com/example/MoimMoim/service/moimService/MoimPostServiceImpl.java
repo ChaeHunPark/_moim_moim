@@ -187,6 +187,7 @@ public class MoimPostServiceImpl implements MoimPostService{
 
         // 1. 포스트 취소 상태로 변경
         moimPost.setMoimStatus(MoimStatus.CANCELED);
+        moimPost.setUpdateAt(LocalDateTime.now());
         moimPost.setCancellationReason(reason);
 
         moimPostRepository.save(moimPost);
@@ -198,6 +199,7 @@ public class MoimPostServiceImpl implements MoimPostService{
         for (MoimParticipation participation : participationList) {
             if(participation.getParticipationStatus() != ParticipationStatus.REJECTED) {
                 participation.setParticipationStatus(ParticipationStatus.CANCELED);
+                participation.setUpdatedAt(LocalDateTime.now());
             }
         }
 
