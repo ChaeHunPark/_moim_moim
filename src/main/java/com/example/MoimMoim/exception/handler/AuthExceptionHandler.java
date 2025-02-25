@@ -26,18 +26,18 @@ public class AuthExceptionHandler {
     // 인증정보가 없을 경우 예외
     @ExceptionHandler(VerificationCodeNotFoundException.class)
     public ResponseEntity<?> handleVerificationCodeNotFound(VerificationCodeNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","인증정보가 존재하지 않습니다."));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","인증정보가 존재하지 않습니다."));
     }
 
     // 인증번호가 만료되었을 경우 예외
     @ExceptionHandler(VerificationCodeExpiredException.class)
     public ResponseEntity<?> handleVerificationCodeExpired(VerificationCodeExpiredException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","인증번호가 만료되었습니다."));
+        return ResponseEntity.status(HttpStatus.GONE).body(Map.of("error","인증번호가 만료되었습니다."));
     }
 
     // 인증번호 불일치 예외
     @ExceptionHandler(VerificationCodeMismatchException.class)
     public ResponseEntity<?> handleVerificationCodeMismatch(VerificationCodeMismatchException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","인증번호가 동일하지 않습니다."));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error","인증번호가 일치하지 않습니다."));
     }
 }

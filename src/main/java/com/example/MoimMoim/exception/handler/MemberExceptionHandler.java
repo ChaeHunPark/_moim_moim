@@ -32,7 +32,7 @@ public class MemberExceptionHandler {
     //멤버 찾기 예외처리
     @ExceptionHandler(MemberNotFoundException.class)
     public ResponseEntity<?> handleMemberNotFoundException(MemberNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error","회원정보가 일치하지 않습니다."));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","회원정보가 일치하지 않습니다."));
     }
 
     //권한 존재 예외처리
