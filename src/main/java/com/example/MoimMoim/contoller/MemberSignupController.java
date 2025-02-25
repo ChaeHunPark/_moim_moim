@@ -41,7 +41,7 @@ public class MemberSignupController {
         }
 
         memberSignupService.signup(memberSignUpRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","회원가입이 완료되었습니다."));
 
     }
 

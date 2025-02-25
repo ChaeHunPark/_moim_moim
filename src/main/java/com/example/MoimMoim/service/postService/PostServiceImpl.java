@@ -4,10 +4,7 @@ import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.domain.QComment;
 import com.example.MoimMoim.domain.QPost;
-import com.example.MoimMoim.dto.post.CommentResponseDTO;
-import com.example.MoimMoim.dto.post.PostResponseDTO;
-import com.example.MoimMoim.dto.post.PostRequestDTO;
-import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
+import com.example.MoimMoim.dto.post.*;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
@@ -122,13 +119,15 @@ public class PostServiceImpl implements PostService{
 
     // 전체 게시글 조회
     @Override
-    public List<PostSummaryResponseDTO> getPostList(String category,
-                                                    String sortBy,
-                                                    String keyword,
-                                                    String searchBy,
-                                                    int page,
-                                                    int size) {
+    public PostPageResponseDTO<PostSummaryResponseDTO> getPostList(String category,
+                                                                   String sortBy,
+                                                                   String keyword,
+                                                                   String searchBy,
+                                                                   int page,
+                                                                   int size) {
         Pageable pageable = createPageable(page - 1, size); // 클라이언트는 1페이지 부터 시작이지만 offset은 0부터이기 떄문에 1페이지는 0이다.
+
+
 
 
         return postRepository.findPostsByCategoryAndKeyword(category, keyword, searchBy, sortBy, pageable);
