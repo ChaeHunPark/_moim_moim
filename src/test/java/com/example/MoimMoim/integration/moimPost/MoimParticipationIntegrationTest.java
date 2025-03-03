@@ -3,9 +3,9 @@ package com.example.MoimMoim.integration.moimPost;
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.MoimParticipation;
 import com.example.MoimMoim.domain.MoimPost;
-import com.example.MoimMoim.dto.moim.MoimParticipationListResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.repository.MemberRepository;
@@ -32,8 +32,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -111,7 +110,7 @@ public class MoimParticipationIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "홍길동",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -123,7 +122,7 @@ public class MoimParticipationIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5555",
                     "name": "김영희",
-                    "gender": "FEMALE",
+                    "gender": "여자",
                     "nickname": "영희",
                     "birthday": "1997-08-15"
                 }
@@ -133,13 +132,13 @@ public class MoimParticipationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(hostSignupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("회원가입이 완료되었습니다."));
 
         mockMvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(participantSignupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("회원가입이 완료되었습니다."));
 
         Optional<Member> getHostMember = memberRepository.findByEmail(hostEmail);
         Optional<Member> getParticipantMember = memberRepository.findByEmail(participantEmail);
@@ -238,7 +237,7 @@ public class MoimParticipationIntegrationTest {
         moimPostRequestDTO = MoimPostRequestDTO.builder()
                 .memberId(hostMember.getMemberId())
                 .title("제목")
-                .category(Category.ART)
+                .category("예술")
                 .content("내용")
                 .location(title)
                 .address(address)
@@ -254,7 +253,7 @@ public class MoimParticipationIntegrationTest {
                         .content(objectMapper.writeValueAsString(moimPostRequestDTO))
                         .header("Authorization", hostAuthToken))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("모임 게시글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("모임 게시글 작성이 완료되었습니다."));
 
 
         //DB에 생성 되었는지 검증
@@ -278,6 +277,8 @@ public class MoimParticipationIntegrationTest {
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
+
+        log.info("contentAsString : {} ", contentAsString);
 
         List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
                 new TypeReference<List<MoimParticipationListResponseDTO>>() {
@@ -329,7 +330,7 @@ public class MoimParticipationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", participantAuthToken))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("참여 신청이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("참여 신청이 완료되었습니다."));
 
         List<MoimParticipation> getParticipantList = moimParticipationRepository.findByMember(participantMember);
         assertThat(getParticipantList.size()).isOne();
@@ -354,7 +355,7 @@ public class MoimParticipationIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", participantAuthToken))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("이미 신청한 모임입니다."));
+                .andExpect(jsonPath("error").value("이미 신청한 모임입니다."));
 
     }
 
@@ -408,7 +409,7 @@ public class MoimParticipationIntegrationTest {
 
         assertThat(intro).isEqualTo("참여 신청 소개");
         assertThat(reasonParticipation).isEqualTo("참여 신청 이유");
-        assertThat(participationStatus).isEqualTo(ParticipationStatus.PENDING.toString());
+        assertThat(participationStatus).isEqualTo(ParticipationStatus.PENDING.getLabel());
     }
 
     @Test
@@ -492,7 +493,7 @@ public class MoimParticipationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", participantAuthToken))
                 .andExpect(status().isOk())
-                .andExpect(content().string("참여 신청이 수락되었습니다."));
+                .andExpect(jsonPath("message").value("참여 신청이 수락되었습니다."));
     }
 
     @Test

@@ -36,18 +36,17 @@ public class CommentController {
 
         commentService.createComment(commentRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("댓글 작성이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","댓글 작성이 완료되었습니다."));
 
     }
 
     // 댓글 수정
     @PutMapping("/comment-id/{commentId}")
-    public ResponseEntity<String> updateComment(
+    public ResponseEntity<?> updateComment(
             @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentRequestDTO commentRequestDTO) {
             commentService.updateComment(commentRequestDTO, commentId);
-            return ResponseEntity.status(HttpStatus.OK).body("댓글이 성공적으로 수정되었습니다.");
-
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","댓글이 수정이 완료되었습니다."));
     }
 
     // 댓글 삭제
@@ -55,6 +54,6 @@ public class CommentController {
     public ResponseEntity<?> deleteComment(@PathVariable("commentId") Long commentId,
                                            @Valid @RequestBody CommentRequestDTO commentRequestDTO) {
         commentService.deleteComment(commentRequestDTO, commentId);
-        return ResponseEntity.status(HttpStatus.OK).body("댓글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","댓글 삭제가 완료되었습니다."));
     }
 }

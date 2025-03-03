@@ -34,6 +34,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             filterChain.doFilter(request, response);
             return;
         }
+
         String requestMethod = request.getMethod();
         if (!requestMethod.equals("POST")) {
 
@@ -41,8 +42,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        //get refresh token
-        String refresh = null;
+        response.setContentType("application/json; charset=UTF-8"); // 응답 타입 설정
+        String refresh = null; //get refresh token
+
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
 
@@ -56,6 +58,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         if (refresh == null) {
 
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"잘못된 접근입니다.\"}");
             return;
         }
 
@@ -66,6 +69,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
             //response status code
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"잘못된 접근입니다.\"}");
             return;
         }
 
@@ -75,6 +79,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
             //response status code
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"잘못된 접근입니다.\"}");
             return;
         }
 

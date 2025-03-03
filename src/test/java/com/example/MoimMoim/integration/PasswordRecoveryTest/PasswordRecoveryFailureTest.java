@@ -54,7 +54,7 @@ public class PasswordRecoveryFailureTest {
                     "password": "QWEr1234@",
                     "phone": "010-1234-5678",
                     "name": "%s",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -66,7 +66,7 @@ public class PasswordRecoveryFailureTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("회원가입이 완료되었습니다."));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class PasswordRecoveryFailureTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNotFound()) // 존재하지 않는 계정이라 실패
-                .andExpect(content().string("회원정보가 일치하지 않습니다."));
+                .andExpect(jsonPath("$.error").value("회원정보가 일치하지 않습니다."));
     }
 
     @Test
@@ -138,8 +138,8 @@ public class PasswordRecoveryFailureTest {
         mockMvc.perform(post("/api/password-recovery/verify-code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest()) // 인증 실패
-                .andExpect(content().string("인증번호가 동일하지 않습니다."));
+                .andExpect(status().is4xxClientError()) // 인증 실패
+                .andExpect(jsonPath("$.error").value("인증번호가 일치하지 않습니다."));
     }
 
     @Test

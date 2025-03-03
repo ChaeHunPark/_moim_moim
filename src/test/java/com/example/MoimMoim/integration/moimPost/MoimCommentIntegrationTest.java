@@ -2,10 +2,9 @@ package com.example.MoimMoim.integration.moimPost;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.MoimPost;
-import com.example.MoimMoim.domain.MoimPostComment;
-import com.example.MoimMoim.dto.moim.MoimCommentRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimCommentResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimCommentRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimCommentResponseDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimCommentRepository;
@@ -31,8 +30,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -94,7 +92,7 @@ public class MoimCommentIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "홍길동",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -104,7 +102,7 @@ public class MoimCommentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("회원가입이 완료되었습니다."));
 
         // member가 잘 저장 되었는가 확인
         member = memberRepository.findByEmail(email).orElseThrow();
@@ -181,7 +179,7 @@ public class MoimCommentIntegrationTest {
         moimPostRequestDTO = MoimPostRequestDTO.builder()
                 .memberId(member.getMemberId())
                 .title("제목")
-                .category(Category.ART)
+                .category("예술")
                 .content("내용")
                 .location(title)
                 .address(address)
@@ -197,7 +195,7 @@ public class MoimCommentIntegrationTest {
                         .content(objectMapper.writeValueAsString(moimPostRequestDTO))
                         .header("Authorization", authToken))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("모임 게시글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("모임 게시글 작성이 완료되었습니다."));
 
 
         //DB에 생성 되었는지 검증
@@ -217,10 +215,10 @@ public class MoimCommentIntegrationTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        JsonNode rootNode = objectMapper.readTree(contentAsString);
-        JsonNode firstItem = rootNode.get(0);
+        log.info("contentAsString1 : {}", contentAsString);
+        JsonNode rootNode = objectMapper.readTree(contentAsString).get("content").get(0);
+        firstItemPostId = rootNode.get("postId").longValue();
 
-        firstItemPostId = firstItem.get("postId").longValue();
 
         Optional<MoimPost> getPost = moimPostRepository.findById(firstItemPostId);
         assertThat(getPost).isNotNull();
@@ -245,7 +243,7 @@ public class MoimCommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(objectMapper.writeValueAsString(moimCommentRequestDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("댓글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("댓글 작성이 완료되었습니다."));
 
     }
 
@@ -290,7 +288,7 @@ public class MoimCommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(objectMapper.writeValueAsString(moimCommentRequestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("댓글이 성공적으로 수정되었습니다."));
+                .andExpect(jsonPath("message").value("댓글이 성공적으로 수정되었습니다."));
     }
 
     @Test
@@ -331,7 +329,7 @@ public class MoimCommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(objectMapper.writeValueAsString(moimCommentRequestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("댓글 삭제가 완료되었습니다."));
+                .andExpect(jsonPath("message").value("댓글 삭제가 완료되었습니다."));
     }
 
     @Test

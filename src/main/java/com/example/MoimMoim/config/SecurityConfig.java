@@ -51,7 +51,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/login", "/", "/api/signup","/api/auth/reissue",
-                                "/api/password-recovery/**").permitAll()
+                                "/api/password-recovery/**", "/api/post/posts").permitAll()
                         .anyRequest().authenticated());
 
         //JWTFilter 등록

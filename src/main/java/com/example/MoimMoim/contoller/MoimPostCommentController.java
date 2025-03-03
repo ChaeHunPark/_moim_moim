@@ -1,7 +1,7 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.dto.moim.MoimCommentRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimCommentRequestDTO;
 import com.example.MoimMoim.service.moimService.MoimCommentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +35,15 @@ public class MoimPostCommentController {
         }
 
         moimCommentService.createComment(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("댓글 작성이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","댓글 작성이 완료되었습니다."));
     }
 
     // 댓글 수정
     @PutMapping("/moim-comment-id/{moimCommentId}")
-    public ResponseEntity<String> updateComment(@RequestBody MoimCommentRequestDTO request,
+    public ResponseEntity<?> updateComment(@RequestBody MoimCommentRequestDTO request,
                                                 @PathVariable("moimCommentId") Long moimCommentId) {
         moimCommentService.updateComment(request, moimCommentId);
-        return ResponseEntity.status(HttpStatus.OK).body("댓글이 성공적으로 수정되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","댓글이 성공적으로 수정되었습니다."));
     }
 
     // 댓글 삭제
@@ -51,6 +51,6 @@ public class MoimPostCommentController {
     public ResponseEntity<?> deleteComment(@PathVariable("moimCommentId") Long moimCommentId,
                                            @Valid @RequestBody MoimCommentRequestDTO moimCommentRequestDTO) {
         moimCommentService.deleteComment(moimCommentRequestDTO, moimCommentId);
-        return ResponseEntity.status(HttpStatus.OK).body("댓글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","댓글 삭제가 완료되었습니다."));
     }
 }

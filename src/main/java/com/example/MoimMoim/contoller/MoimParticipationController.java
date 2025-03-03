@@ -1,15 +1,18 @@
 package com.example.MoimMoim.contoller;
 
-import com.example.MoimMoim.dto.moim.MoimParticipationListResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
+import com.example.MoimMoim.jwtUtil.CustomUserDetails;
 import com.example.MoimMoim.service.moimService.MoimParticipationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/participation")
@@ -24,13 +27,13 @@ public class MoimParticipationController {
 
     // 1. 참여 신청
     @PostMapping("/apply")
-    public ResponseEntity<String> applyForParticipation(@RequestParam("moimPostId") Long moimPostId,
+    public ResponseEntity<?> applyForParticipation(@RequestParam("moimPostId") Long moimPostId,
                                                         @RequestParam("memberId") Long memberId,
                                                         @RequestBody MoimParticipationRequestDTO moimParticipationRequestDTO) {
 
 
         moimParticipationService.applyForParticipation(moimPostId, memberId, moimParticipationRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("참여 신청이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","참여 신청이 완료되었습니다."));
     }
 
     // 2. 단일 조회 (신청한 조회)
@@ -67,7 +70,7 @@ public class MoimParticipationController {
     @PostMapping("/accept/{participationId}")
     public ResponseEntity<?> acceptParticipation(@PathVariable("participationId") Long participationId, @RequestParam("ownerId") Long ownerId) {
         moimParticipationService.acceptParticipation(participationId, ownerId);
-        return ResponseEntity.status(HttpStatus.OK).body("참여 신청이 수락되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","참여 신청이 수락되었습니다."));
     }
 
     // 신청 거절
@@ -76,7 +79,7 @@ public class MoimParticipationController {
                                                       @RequestParam("ownerId") Long ownerId,
                                                       @RequestParam("rejectionReason") String rejectionReason) {
         moimParticipationService.rejectParticipation(participationId, ownerId, rejectionReason);
-        return  ResponseEntity.status(HttpStatus.OK).body("참여 신청이 거절되었습니다.");
+        return  ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "참여 신청이 거절되었습니다."));
     }
 
     //수락한 사람 조회
@@ -95,5 +98,16 @@ public class MoimParticipationController {
         List<MoimParticipationListResponseDTO> rejectedParticipants =
                 moimParticipationService.getRejectedParticipationList(moimPostId);
         return ResponseEntity.ok(rejectedParticipants);
+    }
+
+    // 모임 취소 -> 수락목록 회원 삭제
+    @DeleteMapping("/cancellation/{moimPostId}")
+    public ResponseEntity<?> cancelMoimPost(
+            @PathVariable("moimPostId") Long moimPostId,
+            @RequestParam("reason") String reason) {
+        // 모임 게시글 취소 처리
+        moimParticipationService.cancellationMoimPost(moimPostId, reason);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "모임 취소가 완료되었습니다."));
     }
 }

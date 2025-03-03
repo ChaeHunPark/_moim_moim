@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimPost;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

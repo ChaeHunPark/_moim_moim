@@ -36,7 +36,7 @@ public class MemberSignUpRequestDTO {
     private String name;
 
     @NotNull(message = "성별은 필수 입력 값입니다.")
-    private Gender gender;
+    private String gender;
 
     @NotBlank(message = "닉네임은 필수 입력 값입니다.")
     @Size(min = 2, message = "닉네임은 2자 이상이어야 합니다.")

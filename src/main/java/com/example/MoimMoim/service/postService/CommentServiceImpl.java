@@ -11,50 +11,54 @@ import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.PostRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-public class CommentServiceImpl implements CommentService{
+@RequiredArgsConstructor
+@Transactional
+public class CommentServiceImpl implements CommentService {
+
+    private static final String POST_NOT_FOUND = "게시글이 존재하지 않습니다.";
+    private static final String MEMBER_NOT_FOUND = "회원정보가 일치하지 않습니다.";
+    private static final String COMMENT_NOT_FOUND = "댓글 정보를 찾을 수 없습니다.";
 
     private final MemberRepository memberRepository;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
-    @Autowired
-    public CommentServiceImpl(MemberRepository memberRepository, CommentRepository commentRepository, PostRepository postRepository) {
-        this.memberRepository = memberRepository;
-        this.commentRepository = commentRepository;
-        this.postRepository = postRepository;
-    }
-
-    // 게시글 존재 여부 확인 메서드
+    /**
+     * 게시글 존재 여부 확인
+     */
     private Post validatePostExistence(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("해당 게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
     }
 
-    // 사용자 존재 여부 확인 메서드
+    /**
+     * 사용자 존재 여부 확인
+     */
     private Member validateMemberExistence(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(MEMBER_NOT_FOUND));
     }
 
-    // 댓글 존재 여부 확인 메서드
-    private Comment validateCommentExistence(Long commentId){
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("해당 댓글을 찾을 수 없습니다."));
+    /**
+     * 댓글 존재 여부 확인
+     */
+    private Comment validateCommentExistence(Long commentId, Member member) {
+        return commentRepository.findByCommentIdAndMember(commentId, member)
+                .orElseThrow(() -> new CommentNotFoundException(COMMENT_NOT_FOUND));
     }
 
-
-
-    // 댓글 작성
-    @Transactional
+    /**
+     * 댓글 작성
+     */
     @Override
     public void createComment(CommentRequestDTO commentRequestDTO) {
-        // 게시글과 사용자를 각각 확인
         Post post = validatePostExistence(commentRequestDTO.getPostId());
         Member member = validateMemberExistence(commentRequestDTO.getMemberId());
 
@@ -66,37 +70,30 @@ public class CommentServiceImpl implements CommentService{
                 .build();
 
         commentRepository.save(comment);
-
     }
 
-
-    // 댓글 수정
-    @Transactional
+    /**
+     * 댓글 수정
+     */
     @Override
     public void updateComment(CommentRequestDTO commentRequestDTO, Long commentId) {
-        // 게시글과 사용자, 댓글 정보 확인
         Post post = validatePostExistence(commentRequestDTO.getPostId());
         Member member = validateMemberExistence(commentRequestDTO.getMemberId());
-        Comment comment = commentRepository.findByCommentIdAndMember(commentId, member)
-                        .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+        Comment comment = validateCommentExistence(commentId, member);
 
         comment.setContent(commentRequestDTO.getContent());
-
     }
 
-    @Transactional
+    /**
+     * 댓글 삭제
+     */
     @Override
     public void deleteComment(CommentRequestDTO commentRequestDTO, Long commentId) {
         Post post = validatePostExistence(commentRequestDTO.getPostId());
         Member member = validateMemberExistence(commentRequestDTO.getMemberId());
-        Comment comment = commentRepository.findByCommentIdAndMember(commentId, member)
-                .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+        Comment comment = validateCommentExistence(commentId, member);
 
         commentRepository.delete(comment);
-
     }
-
-    // 댓글 삭제
-
-
 }
+

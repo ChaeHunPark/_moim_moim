@@ -60,7 +60,7 @@ class MemberSignupControllerTest {
                 "Password12@",
                 "010-0000-0000",
                 "name",
-                Gender.MALE,
+                "남",
                 "nickname1",
                 "1991-01-01");
 

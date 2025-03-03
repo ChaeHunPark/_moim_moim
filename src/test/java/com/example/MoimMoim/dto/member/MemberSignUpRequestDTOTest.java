@@ -31,7 +31,7 @@ class MemberSignUpRequestDTOTest {
                 "ValidPassword1@",        // 비밀번호
                 "010-1234-5678",          // 전화번호
                 "John Doe",               // 이름
-                Gender.MALE,              // 성별 (예시 Gender enum: MALE, FEMALE 등)
+                "남자",              // 성별 (예시 Gender enum: MALE, FEMALE 등)
                 "johnny",                 // 닉네임
                 "1990-01-01"              // 생년월일
         );
@@ -46,7 +46,7 @@ class MemberSignUpRequestDTOTest {
                                 "\"password\":\"ValidPassword1@\"," +
                                 "\"phone\":\"010-1234-5678\"," +
                                 "\"name\":\"John Doe\"," +
-                                "\"gender\":\"MALE\"," +
+                                "\"gender\":\"남자\"," +
                                 "\"nickname\":\"johnny\"," +
                                 "\"birthday\":\"1990-01-01\"" +
                                 "}"
@@ -67,7 +67,7 @@ class MemberSignUpRequestDTOTest {
                 + "\"password\":\"ValidPassword1@\","
                 + "\"phone\":\"010-1234-5678\","
                 + "\"name\":\"John Doe\","
-                + "\"gender\":\"MALE\","
+                + "\"gender\":\"남자\","
                 + "\"nickname\":\"johnny\","
                 + "\"birthday\":\"1990-01-01\""
                 + "}";
@@ -80,7 +80,7 @@ class MemberSignUpRequestDTOTest {
         Assertions.assertThat(dto.getPassword()).isEqualTo("ValidPassword1@");
         Assertions.assertThat(dto.getPhone()).isEqualTo("010-1234-5678");
         Assertions.assertThat(dto.getName()).isEqualTo("John Doe");
-        Assertions.assertThat(dto.getGender()).isEqualTo(Gender.MALE);
+        Assertions.assertThat(dto.getGender()).isEqualTo("남자");
         Assertions.assertThat(dto.getNickname()).isEqualTo("johnny");
         Assertions.assertThat(dto.getBirthday()).isEqualTo("1990-01-01");
     }
@@ -95,7 +95,7 @@ class MemberSignUpRequestDTOTest {
                 "ValidPassword1@",        // 비밀번호
                 "010-1234-5678",          // 전화번호
                 "John Doe",               // 이름
-                Gender.MALE,              // 성별 (예시 Gender enum: MALE, FEMALE 등)
+                "예술",              // 성별 (예시 Gender enum: MALE, FEMALE 등)
                 "johnny",                 // 닉네임
                 "1990-01-01"              // 생년월일
         );

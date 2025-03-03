@@ -1,5 +1,6 @@
 package com.example.MoimMoim.service.postService;
 
+import com.example.MoimMoim.dto.post.PostPageResponseDTO;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
@@ -15,12 +16,12 @@ public interface PostService {
     PostResponseDTO viewPost(Long postId);
 
     // 모든 게시글 조회
-    List<PostSummaryResponseDTO> getPostList(String category,
-                                             String keyword,
-                                             String searchBy,
-                                             String sortBy,
-                                             int page,
-                                             int size);
+    PostPageResponseDTO<PostSummaryResponseDTO> getPostList(String category,
+                                                            String keyword,
+                                                            String searchBy,
+                                                            String sortBy,
+                                                            int page,
+                                                            int size);
 
     // 게시글 수정
     void updatePost(Long postId, PostRequestDTO requestDTO);

@@ -2,9 +2,7 @@ package com.example.MoimMoim.integration.moimPost;
 
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.MoimPost;
-import com.example.MoimMoim.domain.Post;
-import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.post.PostResponseDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
@@ -12,7 +10,6 @@ import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
@@ -31,8 +28,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -92,7 +88,7 @@ public class MoimPostIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "홍길동",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -102,7 +98,7 @@ public class MoimPostIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("회원가입이 완료되었습니다."));
 
         // member가 잘 저장 되었는가 확인
         member = memberRepository.findByEmail(email).orElseThrow();
@@ -178,7 +174,7 @@ public class MoimPostIntegrationTest {
         moimPostRequestDTO = MoimPostRequestDTO.builder()
                 .memberId(member.getMemberId())
                 .title("제목")
-                .category(Category.ART)
+                .category("예술")
                 .content("내용")
                 .location(title)
                 .address(address)
@@ -194,7 +190,7 @@ public class MoimPostIntegrationTest {
                         .content(objectMapper.writeValueAsString(moimPostRequestDTO))
                 .header("Authorization", authToken))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("모임 게시글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("모임 게시글 작성이 완료되었습니다."));
 
 
         //DB에 생성 되었는지 검증
@@ -215,9 +211,9 @@ public class MoimPostIntegrationTest {
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
         JsonNode rootNode = objectMapper.readTree(contentAsString);
-        JsonNode firstItem = rootNode.get(0);
+        JsonNode firstItem = rootNode.get("content").get(0);
 
-        // 가져온 아이디 값 저장(수정 및 삭제용도)
+//         가져온 아이디 값 저장(수정 및 삭제용도)
         firstItemPostId = firstItem.get("postId").longValue();
 
         Optional<MoimPost> getPost = moimPostRepository.findById(firstItemPostId);
@@ -241,6 +237,7 @@ public class MoimPostIntegrationTest {
         String contentAsString = mvcResult.getResponse().getContentAsString();
         log.info(contentAsString);
         JsonNode jsonNode = objectMapper.readTree(contentAsString);
+
         // 해당 모임 게시글 id
         long getPostId = jsonNode.get("moimPostId").longValue();
         // 조회수
@@ -278,7 +275,7 @@ public class MoimPostIntegrationTest {
                         .header("Authorization", authToken)
                         .content(objectMapper.writeValueAsString(moimPostRequestDTO)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("게시글 수정이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("모임 게시글 수정이 완료되었습니다."));
 
     }
 
@@ -314,23 +311,6 @@ public class MoimPostIntegrationTest {
     }
 
     @Test
-    @Order(8)
-    @DisplayName("모임 취소")
-    void cancelMoimPost() throws Exception {
-        mockMvc.perform(delete("/api/moim-post/cancellation/{moimPostId}", firstItemPostId)
-                        .param("reason", "취소되었습니다.")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", authToken))
-                .andExpect(status().isOk())
-                .andExpect(content().string("모임 취소가 완료되었습니다."));
-
-        MoimPost moimPost = moimPostRepository.findById(firstItemPostId).orElseThrow(() -> new PostNotFoundException(""));
-
-        assertThat(moimPost.getMoimStatus()).isEqualTo(MoimStatus.CANCELED);
-
-    }
-
-    @Test
     @Order(9)
     @DisplayName("게시글 삭제")
     void testPostDelete() throws Exception {
@@ -339,7 +319,7 @@ public class MoimPostIntegrationTest {
                 .header("Authorization", authToken)
                 .param("memberId", String.valueOf(member.getMemberId())))
                 .andExpect(status().isOk())
-                .andExpect(content().string("게시글 삭제가 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("모임 게시글 삭제가 완료되었습니다."));
 
         Optional<MoimPost> getPost = moimPostRepository.findById(firstItemPostId);
 

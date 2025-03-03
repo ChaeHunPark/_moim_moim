@@ -1,14 +1,13 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
-import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostPageResponseDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostResponseDTO;
+import com.example.MoimMoim.dto.moimPost.MoimPostSummaryResponseDTO;
 import com.example.MoimMoim.service.moimService.MoimPostService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -38,7 +37,7 @@ public class MoimPostController {
             return ResponseEntity.badRequest().body(errors);
         }
         moimPostService.createMoimPost(moimPostRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("모임 게시글 작성이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","모임 게시글 작성이 완료되었습니다."));
     }
 
     // 게시글 상세 조회
@@ -50,7 +49,7 @@ public class MoimPostController {
 
     // 게시글 목록 조회
     @GetMapping("/moim-posts")
-    public ResponseEntity<List<MoimPostSummaryResponseDTO>> getPostList(
+    public ResponseEntity<MoimPostPageResponseDTO<MoimPostSummaryResponseDTO>> getPostList(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "30") int size,
             @RequestParam(name = "category", required = false) String category, // 카테고리별 필터는 옵션임
@@ -61,7 +60,7 @@ public class MoimPostController {
             @RequestParam(name = "moimStatus", required = false) String moimStatus
             ) {
 
-        List<MoimPostSummaryResponseDTO> posts = moimPostService.getPostList(
+        MoimPostPageResponseDTO<MoimPostSummaryResponseDTO> posts = moimPostService.getPostList(
                 category, sortBy, keyword, searchBy,
                 region, moimStatus, page, size);
 
@@ -81,30 +80,20 @@ public class MoimPostController {
 
         moimPostService.updatePost(moimPostId, requestDTO);
 
-        return ResponseEntity.status(HttpStatus.OK).body("게시글 수정이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","모임 게시글 수정이 완료되었습니다."));
     }
 
-    // 모임 취소 -> 수락목록 회원 삭제
-    @DeleteMapping("/cancellation/{moimPostId}")
-    public ResponseEntity<?> cancelMoimPost(
-            @PathVariable("moimPostId") Long moimPostId,
-            @RequestParam("reason") String reason) {
 
-        // 모임 게시글 취소 처리
-        moimPostService.cancellationMoimPost(moimPostId, reason);
-
-        return ResponseEntity.status(HttpStatus.OK).body("모임 취소가 완료되었습니다.");
-    }
 
 
 
     // 게시글 삭제
     @DeleteMapping("/moim-post-id/{moimPostId}")
-    public ResponseEntity<String> deletePost(
+    public ResponseEntity<?> deletePost(
             @PathVariable("moimPostId") Long moimPostId,
             @RequestParam("memberId") Long memberId) {
         moimPostService.deletePost(moimPostId, memberId);
-        return ResponseEntity.status(HttpStatus.OK).body("게시글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","모임 게시글 삭제가 완료되었습니다."));
     }
 
 }

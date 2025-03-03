@@ -113,7 +113,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService{
         if (recoveryMethodRequestDTO.getMethod().equalsIgnoreCase("email")) {
             sendEmail(recoveryMethodRequestDTO.getEmail());
         } else {
-            throw new InvalidAuthenticationMethodException("잘못된 인증방식 입니다.");
+            throw new InvalidAuthenticationMethodException("인증 방식이 잘못되었습니다.");
         }
     }
 

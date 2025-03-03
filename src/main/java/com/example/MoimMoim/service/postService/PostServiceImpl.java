@@ -4,11 +4,9 @@ import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.domain.QComment;
 import com.example.MoimMoim.domain.QPost;
-import com.example.MoimMoim.dto.post.CommentResponseDTO;
-import com.example.MoimMoim.dto.post.PostResponseDTO;
-import com.example.MoimMoim.dto.post.PostRequestDTO;
-import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
+import com.example.MoimMoim.dto.post.*;
 import com.example.MoimMoim.enums.Category;
+import com.example.MoimMoim.enums.EnumUtils;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
 import com.example.MoimMoim.exception.post.PostNotFoundException;
 import com.example.MoimMoim.repository.MemberRepository;
@@ -19,6 +17,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -32,148 +31,127 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class PostServiceImpl implements PostService{
+@RequiredArgsConstructor
+@Transactional
+public class PostServiceImpl implements PostService {
+
+    private static final String MEMBER_NOT_FOUND = "사용자를 찾을 수 없습니다.";
+    private static final String POST_NOT_FOUND = "게시글을 찾을 수 없습니다.";
 
     private final DateTimeUtilService dateTimeUtilService;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
 
-    @Autowired
-    public PostServiceImpl(DateTimeUtilService dateTimeUtilService, PostRepository postRepository, MemberRepository memberRepository) {
-        this.dateTimeUtilService = dateTimeUtilService;
-        this.postRepository = postRepository;
-        this.memberRepository = memberRepository;
-    }
-
+    /**
+     * 회원 찾기
+     */
     private Member findMember(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(MEMBER_NOT_FOUND));
     }
 
-
-    public Post convertPost(PostRequestDTO postRequestDTO){
+    /**
+     * 게시글 변환
+     */
+    private Post convertPost(PostRequestDTO dto) {
         return Post.builder()
-                    .title(postRequestDTO.getTitle())
-                    .category(postRequestDTO.getCategory())
-                    .content(postRequestDTO.getContent())
-                    .createAt(LocalDateTime.now())
-                    .updateAt(null)
-                    .viewCount(0L)
-                    .member(findMember(postRequestDTO.getMemberId()))
-                    .build();
+                .title(dto.getTitle())
+                .category(EnumUtils.fromLabel(Category.class,dto.getCategory()))
+                .content(dto.getContent())
+                .createAt(LocalDateTime.now())
+                .viewCount(0L)
+                .member(findMember(dto.getMemberId()))
+                .build();
     }
 
-
-
-
-    @Transactional
+    /**
+     * 게시글 생성
+     */
     @Override
     public void createPost(PostRequestDTO postRequestDTO) {
-        Post post = convertPost(postRequestDTO);
-        postRepository.save(post);
+        postRepository.save(convertPost(postRequestDTO));
     }
 
-    // 게시글 단건 조회
+    /**
+     * 게시글 조회 및 조회수 증가
+     */
     @Override
     public PostResponseDTO viewPost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
 
-        // 게시글 조회 후 카운트 증가 및 데이터베이스에 저장
-        post.incrementViewCount();
+        post.incrementViewCount(); // 조회수 증가
         postRepository.save(post);
 
-        // 댓글리스트 생성
-        List<CommentResponseDTO> comments = new ArrayList<>();
+        return convertToPostResponseDTO(post);
+    }
 
-        // 댓글이 있으면 변환
-        if(post.getComments() != null) {
-            comments = post.getComments().stream()
-                    .map(comment -> new CommentResponseDTO(
-                            comment.getCommentId(),
-                            comment.getMember().getMemberId(),
-                            comment.getContent(),
-                            comment.getMember().getNickname(),
-                            dateTimeUtilService.formatForClient(comment.getCreateAt())))
-                    .collect(Collectors.toList());
-        }
+    /**
+     * 게시글 응답 변환
+     */
+    private PostResponseDTO convertToPostResponseDTO(Post post) {
+        List<CommentResponseDTO> comments = post.getComments().stream()
+                .map(comment -> new CommentResponseDTO(
+                        comment.getCommentId(),
+                        comment.getMember().getMemberId(),
+                        comment.getContent(),
+                        comment.getMember().getNickname(),
+                        dateTimeUtilService.formatForClient(comment.getCreateAt())))
+                .collect(Collectors.toList());
 
-
-
-
-        PostResponseDTO postResponseDTO = PostResponseDTO.builder()
+        return PostResponseDTO.builder()
                 .postId(post.getPostId())
                 .title(post.getTitle())
-                .category(post.getCategory())
+                .category(post.getCategory().getLabel())
                 .content(post.getContent())
                 .nickname(post.getMember().getNickname())
                 .createAt(dateTimeUtilService.formatForClient(post.getCreateAt()))
-                .commentList(comments)
+                .updateAt(post.getUpdateAt() != null ? dateTimeUtilService.formatForClient(post.getUpdateAt()) : null)
                 .viewCount(post.getViewCount())
+                .commentList(comments)
                 .build();
-
-        if(post.getUpdateAt() != null) {
-            postResponseDTO.setUpdateAt(dateTimeUtilService.formatForClient(post.getUpdateAt()));
-        }
-
-        return postResponseDTO;
-
     }
 
-    // 전체 게시글 조회
+    /**
+     * 전체 게시글 조회
+     */
     @Override
-    public List<PostSummaryResponseDTO> getPostList(String category,
-                                                    String sortBy,
-                                                    String keyword,
-                                                    String searchBy,
-                                                    int page,
-                                                    int size) {
-        Pageable pageable = createPageable(page - 1, size); // 클라이언트는 1페이지 부터 시작이지만 offset은 0부터이기 떄문에 1페이지는 0이다.
-
-
+    public PostPageResponseDTO<PostSummaryResponseDTO> getPostList(String category, String sortBy, String keyword, String searchBy, int page, int size) {
+        Pageable pageable = createPageable(page, size);
         return postRepository.findPostsByCategoryAndKeyword(category, keyword, searchBy, sortBy, pageable);
     }
 
-
-    @Transactional
+    /**
+     * 게시글 수정
+     */
     @Override
     public void updatePost(Long postId, PostRequestDTO postRequestDTO) {
-        // 1. member 찾기
-        Member member = memberRepository.findById(postRequestDTO.getMemberId())
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
-        // 2. postId와 member 기준으로 찾기
+        Member member = findMember(postRequestDTO.getMemberId());
         Post post = postRepository.findByPostIdAndMember(postId, member)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
 
-        // 2. 게시글 수정
-        post.setTitle(postRequestDTO.getTitle());
-        post.setCategory(postRequestDTO.getCategory());
-        post.setContent(postRequestDTO.getContent());
-        post.setUpdateAt(LocalDateTime.now());
-
-        postRepository.save(post);
+        post.update(postRequestDTO.getTitle(),
+                EnumUtils.fromLabel(Category.class,postRequestDTO.getCategory()),
+                postRequestDTO.getContent());
     }
 
-    @Transactional
+    /**
+     * 게시글 삭제
+     */
     @Override
     public void deletePost(Long postId, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
+        Member member = findMember(memberId);
         Post post = postRepository.findByPostIdAndMember(postId, member)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
 
         postRepository.delete(post);
     }
 
-    // Pageable 유효성 검사 메서드
+    /**
+     * 페이지네이션 유효성 검사 및 생성
+     */
     public Pageable createPageable(int page, int size) {
-        // offset이 -1인 경우, 0으로 변경
-        int correctedPage = (page < 0) ? 0 : page;
-
-        // size가 30이나 60이 아닌 경우, 30으로 설정
-        int correctedSize = (size == 30 || size == 60) ? size : 30;
-
-        return PageRequest.of(correctedPage, correctedSize);
+        return PageRequest.of(Math.max(page - 1, 0), (size == 30 || size == 60) ? size : 30);
     }
-
 }
+

@@ -1,6 +1,7 @@
 package com.example.MoimMoim.contoller;
 
 import com.example.MoimMoim.common.ValidationService;
+import com.example.MoimMoim.dto.post.PostPageResponseDTO;
 import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.dto.post.PostRequestDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
@@ -43,7 +44,7 @@ public class PostController {
 
         postService.createPost(postRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 작성이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message","게시글 작성이 완료되었습니다."));
     }
 
 
@@ -56,16 +57,16 @@ public class PostController {
 
 //    전체 포스트 조회
     @GetMapping("/posts")
-    public ResponseEntity<List<PostSummaryResponseDTO>> getAllPosts(
+    public ResponseEntity<PostPageResponseDTO<PostSummaryResponseDTO>> getAllPosts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name = "size", defaultValue = "40") int size,
+            @RequestParam(name = "size", defaultValue = "30") int size,
             @RequestParam(name = "category", required = false) String category, // 카테고리별 필터는 옵션임
-            @RequestParam(name = "sortBy", defaultValue = "date") String sortBy,
+            @RequestParam(name = "sortBy", defaultValue = "date-asc") String sortBy,
             @RequestParam(name = "keyword", required = false) String keyword, // 키워드도 옵션임
             @RequestParam(name = "searchBy", defaultValue = "title") String searchBy// "title", "content", "title+content"
     ) {
 
-        List<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, keyword, searchBy, page, size);
+        PostPageResponseDTO<PostSummaryResponseDTO> posts = postService.getPostList(category, sortBy, keyword, searchBy, page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
@@ -83,7 +84,7 @@ public class PostController {
 
         postService.updatePost(postId, postRequestDTO);
 
-        return ResponseEntity.status(HttpStatus.OK).body("게시글 수정이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","게시글 수정이 완료되었습니다."));
     }
 
     // 포스트 삭제
@@ -91,7 +92,7 @@ public class PostController {
     public ResponseEntity<?> deletePost( @PathVariable("postId") Long postId,
                                          @RequestParam("memberId") Long memberId) {
         postService.deletePost(postId, memberId);
-        return ResponseEntity.status(HttpStatus.OK).body("게시글 삭제가 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","게시글 삭제가 완료되었습니다."));
     }
 
 

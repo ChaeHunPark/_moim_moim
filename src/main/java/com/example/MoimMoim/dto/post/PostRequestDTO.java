@@ -24,10 +24,10 @@ public class PostRequestDTO {
     * */
 
     @NotNull(message = "카테고리는 필수 입력 항목입니다.")
-    private Category category;
+    private String category;
 
     @NotBlank(message = "내용은 필수 입력 항목입니다.")
-    @Size(max = 1000, message = "내용은 최대 1000자까지 입력 가능합니다.")
+    @Size(max = 3000, message = "내용은 최대 3000자까지 입력 가능합니다.")
     private String content;
 
     @NotNull(message = "작성자의 ID는 필수 입력 항목입니다.")

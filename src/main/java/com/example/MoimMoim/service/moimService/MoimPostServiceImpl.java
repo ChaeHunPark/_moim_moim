@@ -1,10 +1,9 @@
 package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moim.MoimCommentResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimPostRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimPostResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimPostSummaryResponseDTO;
+import com.example.MoimMoim.dto.moimPost.*;
+import com.example.MoimMoim.enums.Category;
+import com.example.MoimMoim.enums.EnumUtils;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
@@ -16,6 +15,7 @@ import com.example.MoimMoim.repository.MoimPostRepository;
 import com.example.MoimMoim.service.utilService.DateTimeUtilService;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -29,39 +29,36 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class MoimPostServiceImpl implements MoimPostService{
+@RequiredArgsConstructor
+@Transactional
+public class MoimPostServiceImpl implements MoimPostService {
+
+    private static final String MEMBER_NOT_FOUND = "회원 정보를 찾을 수 없습니다.";
+    private static final String POST_NOT_FOUND = "게시글 정보를 찾을 수 없습니다.";
+    private static final String POST_NOT_EXIST = "게시글이 존재하지 않습니다.";
 
     private final MemberRepository memberRepository;
     private final DateTimeUtilService dateTimeUtilService;
     private final MoimPostRepository moimPostRepository;
-    private final MoimParticipationRepository moimParticipationRepository;
-    private final MoimAccptedMemberRepository moimAccptedMemberRepository;
 
-    @Autowired
-    public MoimPostServiceImpl(MemberRepository memberRepository, DateTimeUtilService dateTimeUtilService, MoimPostRepository moimPostRepository, MoimParticipationRepository moimParticipationRepository, JPAQueryFactory jpaQueryFactory, MoimAccptedMemberRepository moimAccptedMemberRepository) {
-        this.memberRepository = memberRepository;
-        this.dateTimeUtilService = dateTimeUtilService;
-        this.moimPostRepository = moimPostRepository;
-        this.moimParticipationRepository = moimParticipationRepository;
-        this.moimAccptedMemberRepository = moimAccptedMemberRepository;
-    }
-
-    private String extractRegionFromData(String address){
+    // 지역 추출 공통 메서드
+    private String extractRegionFromData(String address) {
         return address.split(" ")[0];
     }
 
-    private Member findMember (Long memberId) {
+    // 회원 찾기
+    private Member findMember(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException(MEMBER_NOT_FOUND));
     }
 
-
-
-    private MoimPost convertMoimPost(MoimPostRequestDTO moimPostRequestDTO){
+    // MoimPost 객체로 변환
+    private MoimPost convertMoimPost(MoimPostRequestDTO moimPostRequestDTO) {
+        Member member = findMember(moimPostRequestDTO.getMemberId());
         return MoimPost.builder()
-                .member(findMember(moimPostRequestDTO.getMemberId()))
+                .member(member)
                 .title(moimPostRequestDTO.getTitle())
-                .category(moimPostRequestDTO.getCategory())
+                .category(EnumUtils.fromLabel(Category.class, moimPostRequestDTO.getCategory()))
                 .content(moimPostRequestDTO.getContent())
                 .location(moimPostRequestDTO.getLocation())
                 .address(moimPostRequestDTO.getAddress())
@@ -80,37 +77,18 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .build();
     }
 
-
-    @Transactional
-    @Override
-    public void createMoimPost(MoimPostRequestDTO moimPostRequestDTO) {
-        MoimPost moimPost = convertMoimPost(moimPostRequestDTO);
-        moimPostRepository.save(moimPost);
-    }
-
-    @Transactional
-    @Override
-    public MoimPostResponseDTO viewMoimPost(Long postId) {
-        MoimPost moimPost = moimPostRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("게시글이 존재하지 않습니다."));
-
-        moimPost.incrementViewCount();
-        moimPostRepository.save(moimPost);
-
-        List<MoimCommentResponseDTO> comments = new ArrayList<>();
-
-        if (moimPost.getMoimComments() != null ) {
-            comments = moimPost.getMoimComments().stream()
-                .map(comment -> new MoimCommentResponseDTO(
-                        comment.getMoimCommentId(),
-                        comment.getMember().getMemberId(),
-                        comment.getContent(),
-                        comment.getMember().getNickname(),
-                        dateTimeUtilService.formatForClient(comment.getCreateAt())
-                )).collect(Collectors.toList());
-        }
-
-
+    // 게시글 보기: 댓글 정보 포함
+    private MoimPostResponseDTO buildMoimPostResponse(MoimPost moimPost) {
+        List<MoimCommentResponseDTO> comments = moimPost.getMoimComments() != null ?
+                moimPost.getMoimComments().stream()
+                        .map(comment -> new MoimCommentResponseDTO(
+                                comment.getMoimCommentId(),
+                                comment.getMember().getMemberId(),
+                                comment.getContent(),
+                                comment.getMember().getNickname(),
+                                dateTimeUtilService.formatForClient(comment.getCreateAt())
+                        ))
+                        .collect(Collectors.toList()) : new ArrayList<>();
 
         MoimPostResponseDTO moimPostResponseDTO = MoimPostResponseDTO.builder()
                 .memberId(moimPost.getMember().getMemberId())
@@ -125,44 +103,56 @@ public class MoimPostServiceImpl implements MoimPostService{
                 .mapy(moimPost.getMapy())
                 .currentParticipants(moimPost.getCurrentParticipants())
                 .maxParticipants(moimPost.getMaxParticipants())
-                .category(moimPost.getCategory())
-                .moimStatus(moimPost.getMoimStatus())
+                .category(moimPost.getCategory().getLabel())
+                .moimStatus(moimPost.getMoimStatus().getDisplayName())
                 .viewCount(moimPost.getViewCount())
                 .moimDate(dateTimeUtilService.formatForClient(moimPost.getMoimDate()))
                 .createdAt(dateTimeUtilService.formatForClient(moimPost.getCreatedAt()))
                 .moimCommentList(comments)
                 .build();
 
-        // 업데이트가 null 일수도 있다.
-        if(moimPost.getUpdateAt() != null){
+        if (moimPost.getUpdateAt() != null) {
             moimPostResponseDTO.setUpdateAt(dateTimeUtilService.formatForClient(moimPost.getUpdateAt()));
         }
 
-
-
         return moimPostResponseDTO;
-
-
     }
 
+    // 게시글 작성
     @Override
-    public List<MoimPostSummaryResponseDTO> getPostList(
+    public void createMoimPost(MoimPostRequestDTO moimPostRequestDTO) {
+        MoimPost moimPost = convertMoimPost(moimPostRequestDTO);
+        moimPostRepository.save(moimPost);
+    }
+
+    // 게시글 조회
+    @Override
+    public MoimPostResponseDTO viewMoimPost(Long postId) {
+        MoimPost moimPost = moimPostRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_EXIST));
+
+        moimPost.incrementViewCount();
+        moimPostRepository.save(moimPost);
+
+        return buildMoimPostResponse(moimPost);
+    }
+
+    // 게시글 목록 조회
+    @Override
+    public MoimPostPageResponseDTO<MoimPostSummaryResponseDTO> getPostList(
             String category, String sortBy, String keyword, String searchBy,
             String region, String moimStatus, int page, int size) {
 
         Pageable pageable = createPageable(page - 1, size);
-
         return moimPostRepository.getPostList(category, sortBy, pageable, keyword, searchBy, region, moimStatus);
     }
 
-    @Transactional
+    // 게시글 수정
     @Override
     public void updatePost(Long moimPostId, MoimPostRequestDTO requestDTO) {
-        Member member = memberRepository.findById(requestDTO.getMemberId())
-                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
-
+        Member member = findMember(requestDTO.getMemberId());
         MoimPost moimPost = moimPostRepository.findByMoimPostIdAndMember(moimPostId, member)
-                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
 
         moimPost.setTitle(requestDTO.getTitle());
         moimPost.setContent(requestDTO.getContent());
@@ -172,68 +162,26 @@ public class MoimPostServiceImpl implements MoimPostService{
         moimPost.setRegion(extractRegionFromData(requestDTO.getRoadAddress()));
         moimPost.setMapx(requestDTO.getMapx());
         moimPost.setMapy(requestDTO.getMapy());
-        moimPost.setCategory(requestDTO.getCategory());
+        moimPost.setCategory(EnumUtils.fromLabel(Category.class, requestDTO.getCategory()));
         moimPost.setMoimDate(requestDTO.getMoimDate());
         moimPost.setUpdateAt(LocalDateTime.now());
 
         moimPostRepository.save(moimPost);
     }
 
-    @Override
-    public void cancellationMoimPost(Long moimPostId, String reason) {
-
-        MoimPost moimPost = moimPostRepository.findById(moimPostId)
-                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
-
-        // 1. 포스트 취소 상태로 변경
-        moimPost.setMoimStatus(MoimStatus.CANCELED);
-        moimPost.setUpdateAt(LocalDateTime.now());
-        moimPost.setCancellationReason(reason);
-
-        moimPostRepository.save(moimPost);
-
-        // 2. 모임 신청자들의 상태 변경
-        List<MoimParticipation> participationList = moimParticipationRepository.findByMoimPost(moimPost);
-
-        // 거절한 사람은 상태 변경이 필요없음.
-        for (MoimParticipation participation : participationList) {
-            if(participation.getParticipationStatus() != ParticipationStatus.REJECTED) {
-                participation.setParticipationStatus(ParticipationStatus.CANCELED);
-                participation.setUpdatedAt(LocalDateTime.now());
-            }
-        }
-
-        moimParticipationRepository.saveAll(participationList);
-
-        // 3. 수락된 신청자들 조회해서 삭제
-        List<MoimAccptedMember> acceptMemberList = moimAccptedMemberRepository.findByMoimParticipationIn(participationList);
-
-        moimAccptedMemberRepository.deleteAllInBatch(acceptMemberList);
-
-    }
-
-    @Transactional
+    // 게시글 삭제
     @Override
     public void deletePost(Long moimPostId, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("회원 정보를 찾을 수 없습니다."));
-
+        Member member = findMember(memberId);
         MoimPost moimPost = moimPostRepository.findByMoimPostIdAndMember(moimPostId, member)
-                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new PostNotFoundException(POST_NOT_FOUND));
         moimPostRepository.delete(moimPost);
-
     }
 
     // Pageable 유효성 검사 메서드
     public Pageable createPageable(int page, int size) {
-        // offset이 -1인 경우, 0으로 변경
-        int correctedPage = (page < 0) ? 0 : page;
-
-        // size가 30이나 60이 아닌 경우, 30으로 설정
+        int correctedPage = Math.max(0, page);
         int correctedSize = (size == 30 || size == 60) ? size : 30;
-
         return PageRequest.of(correctedPage, correctedSize);
     }
-
-
 }

@@ -15,8 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
@@ -57,7 +56,7 @@ public class MapSearchIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "홍길동",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -67,7 +66,7 @@ public class MapSearchIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("message").value("회원가입이 완료되었습니다."));
 
         // Ensure the member is saved
         member = memberRepository.findByEmail(email).orElseThrow();

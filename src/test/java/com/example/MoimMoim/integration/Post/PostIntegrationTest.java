@@ -192,7 +192,7 @@ public class PostIntegrationTest {
     void testPostEdit() throws Exception {
         PostRequestDTO postRequestDTO = PostRequestDTO.builder()
                 .title("수정된 제목")
-                .category(Category.ART)
+                .category("ART")
                 .content("수정된 내용")
                 .memberId(member.getMemberId())
                 .build();

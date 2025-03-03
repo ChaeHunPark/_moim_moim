@@ -1,5 +1,7 @@
 package com.example.MoimMoim.enums;
 
+import java.util.Arrays;
+
 public enum ParticipationStatus {
 
     ACCEPTED("수락"),
@@ -16,6 +18,5 @@ public enum ParticipationStatus {
     public String getLabel() {
         return label;
     }
-
 
 }

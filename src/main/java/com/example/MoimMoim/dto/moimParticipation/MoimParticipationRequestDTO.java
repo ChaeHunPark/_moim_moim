@@ -1,8 +1,7 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimParticipation;
 
 
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

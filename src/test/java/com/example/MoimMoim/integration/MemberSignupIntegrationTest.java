@@ -175,7 +175,7 @@ public class MemberSignupIntegrationTest {
         mockMvc.perform(post("/api/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(duplicateNicknameRequestBody))
-                .andExpect(status().isBadRequest()) // 409 Conflict 응답 기대
+                .andExpect(status().isBadRequest())
                 .andExpect(content().string("이미 사용 중인 닉네임 입니다."));
     }
 

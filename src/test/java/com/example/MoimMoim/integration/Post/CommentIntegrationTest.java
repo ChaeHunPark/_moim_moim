@@ -5,6 +5,7 @@ import com.example.MoimMoim.dto.post.PostResponseDTO;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.PostRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hibernate.mapping.Map;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -58,7 +59,7 @@ public class CommentIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "홍길동",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -68,7 +69,7 @@ public class CommentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(content().json("{\"message\":\"회원가입이 완료되었습니다.\"}"));
 
         member = memberRepository.findByEmail(email).orElseThrow();
         assertThat(member).isNotNull();
@@ -102,7 +103,7 @@ public class CommentIntegrationTest {
         String postRequestBody = """
                 {
                     "title" : "게시글 제목",
-                    "category" : "ART",
+                    "category" : "예술",
                     "content" : "게시글 내용",
                     "memberId" : "%d"
                 }
@@ -113,7 +114,7 @@ public class CommentIntegrationTest {
                         .content(postRequestBody)
                         .header("Authorization", authToken))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("게시글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("게시글 작성이 완료되었습니다."));
 
         // Fetch the postId for subsequent comment tests
         postId = postRepository.findAll().get(0).getPostId();
@@ -136,7 +137,7 @@ public class CommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(commentRequestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("댓글 작성이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("댓글 작성이 완료되었습니다."));
     }
 
     @Test
@@ -175,7 +176,7 @@ public class CommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(commentRequestBody))
                 .andExpect(status().isOk())
-                .andExpect(content().string("댓글이 성공적으로 수정되었습니다."));
+                .andExpect(jsonPath("$.message").value("댓글이 수정이 완료되었습니다."));
     }
 
     @Test
@@ -214,7 +215,7 @@ public class CommentIntegrationTest {
                         .header("Authorization", authToken)
                         .content(postRequestBody))
                 .andExpect(status().isOk())
-                .andExpect(content().string("댓글 삭제가 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("댓글 삭제가 완료되었습니다."));
     }
 
     @Test

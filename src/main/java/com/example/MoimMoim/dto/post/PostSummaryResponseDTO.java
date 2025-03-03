@@ -12,7 +12,7 @@ public class PostSummaryResponseDTO {
 
     private Long postId;
     private String title;
-    private Category category;
+    private String  category;
     private String createAt;
     private String nickname;
     private Long commentCount;

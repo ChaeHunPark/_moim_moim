@@ -27,8 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -71,7 +70,7 @@ public class PasswordRecoveryIntegrationTest {
                     "password": "%s",
                     "phone": "010-1234-5678",
                     "name": "%s",
-                    "gender": "MALE",
+                    "gender": "남자",
                     "nickname": "길동이",
                     "birthday": "1995-08-15"
                 }
@@ -83,7 +82,7 @@ public class PasswordRecoveryIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("회원가입이 완료되었습니다."));
+                .andExpect(jsonPath("$.message").value("회원가입이 완료되었습니다."));
     }
 
 
@@ -127,7 +126,7 @@ public class PasswordRecoveryIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody_start))
                 .andExpect(status().isOk())
-                .andExpect(content().string("계정이 존재합니다. 다음 단계로 진행합니다."));
+                .andExpect(jsonPath("$.message").value("계정이 존재합니다. 다음 단계로 진행합니다."));
 
 
         // 실제 메일은 전송하지 않도록 한다. (실행 시간이 오래걸린다.)
@@ -142,14 +141,14 @@ public class PasswordRecoveryIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody_chooseMethod))
                 .andExpect(status().isOk())
-                .andExpect(content().string("인증 코드가 전송되었습니다."));
+                .andExpect(jsonPath("$.message").value("인증 코드가 전송되었습니다."));
 
         // 3. 인증 코드 검증
         mockMvc.perform(post("/api/password-recovery/verify-code")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody_verifyCode))
                 .andExpect(status().isOk())
-                .andExpect(content().string("인증 코드가 확인되었습니다. 비밀번호를 재설정해주세요."));
+                .andExpect(jsonPath("$.message").value("인증 코드가 확인되었습니다. 비밀번호를 재설정해주세요."));
 
 
 
@@ -158,7 +157,7 @@ public class PasswordRecoveryIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody_resetPassword))
                 .andExpect(status().isOk())
-                .andExpect(content().string("비밀번호가 성공적으로 재설정되었습니다."));
+                .andExpect(jsonPath("$.message").value("비밀번호가 성공적으로 재설정되었습니다."));
         
         // 비밀번호 바뀌었는지 검증
        Member member = memberRepository.findByEmail(email).

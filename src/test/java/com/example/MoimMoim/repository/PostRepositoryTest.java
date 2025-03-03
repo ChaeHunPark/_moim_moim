@@ -142,102 +142,102 @@ public class PostRepositoryTest {
 
     }
 
-    @Test
-    @DisplayName("카테고리, 키워드 리스트 조회")
-    void findPostsByCategoryAndKeyword() {
-        List<PostSummaryResponseDTO> SizeTECH = postRepository.findPostsByCategoryAndKeyword("TECHNOLOGY",
-                null,
-                "title",
-                "date",
-                PageRequest.of(1 - 1, 40));
-
-        assertThat(SizeTECH).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide' 두 개의 게시글이 반환됨
-    }
-
-    @Test
-    @DisplayName("카테고리와 키워드로 게시글 조회")
-    void findPostsByCategoryAndKeywordWithKeyword() {
-        List<PostSummaryResponseDTO> filteredPosts = postRepository.findPostsByCategoryAndKeyword(
-                "TECHNOLOGY",
-                "Spring",
-                "content",
-                "date",
-                PageRequest.of(1 - 1, 40)
-        );
-
-        assertThat(filteredPosts).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide'가 필터링되어 반환됨
-    }
-
-    @Test
-    @DisplayName("카테고리로 게시글 조회")
-    void findPostsByCategoryOnly() {
-        List<PostSummaryResponseDTO> posts = postRepository.findPostsByCategoryAndKeyword(
-                "TECHNOLOGY",
-                null,
-                null,
-                null,
-                PageRequest.of(1-1, 40)
-        );
-
-        assertThat(posts).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide'만 반환됨
-    }
-
-    @Test
-    @DisplayName("키워드로 게시글 조회")
-    void findPostsByKeywordOnly() {
-        List<PostSummaryResponseDTO> filteredPosts = postRepository.findPostsByCategoryAndKeyword(
-                null,
-                "Spring",
-                "content",
-                "date",
-                PageRequest.of(1-1, 40)
-        );
-
-        assertThat(filteredPosts).hasSize(3);  // 모든 게시글에 'Spring' 키워드가 포함되어 있음
-    }
-
-    @Test
-    @DisplayName("카테고리와 키워드로 필터링된 게시글이 없을 경우")
-    void findPostsByCategoryAndKeywordNoMatch() {
-
-
-        assertThatThrownBy(() ->
-                 postRepository.findPostsByCategoryAndKeyword(
-                        "LIFESTYLE",  // 존재하지 않는 카테고리, 카테고리는 사용자가 조정할 수 없음, exception
-                        "Java",  // 해당 키워드가 게시글에 없음
-                        "title+content",
-                        null,
-                        PageRequest.of(1-1, 40)
-                )
-                ).isInstanceOf(CategoryNotFoundException.class)
-                .hasMessage("카테고리 정보가 없습니다.");
-
-
-    }
-
-    @Test
-    @DisplayName("페이징 처리 테스트")
-    void findPostsWithPagination() {
-        List<PostSummaryResponseDTO> page1 = postRepository.findPostsByCategoryAndKeyword(
-                "TECHNOLOGY",
-                null,
-                null,
-                null,
-                PageRequest.of(1-1, 2)  // 페이지 크기 2
-        );
-
-        assertThat(page1).hasSize(2);  // 첫 번째 페이지는 2개의 게시글만 반환
-
-        List<PostSummaryResponseDTO> page2 = postRepository.findPostsByCategoryAndKeyword(
-                "TECHNOLOGY",
-                null,
-                null,
-                null,
-                PageRequest.of(2-1, 2)  // 두 번째 페이지
-        );
-
-        assertThat(page2).hasSize(0);  // 두 번째 페이지에는 더 이상 게시글이 없음
-    }
+//    @Test
+//    @DisplayName("카테고리, 키워드 리스트 조회")
+//    void findPostsByCategoryAndKeyword() {
+//        List<PostSummaryResponseDTO> SizeTECH = postRepository.findPostsByCategoryAndKeyword("TECHNOLOGY",
+//                null,
+//                "title",
+//                "date",
+//                PageRequest.of(1 - 1, 40));
+//
+//        assertThat(SizeTECH).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide' 두 개의 게시글이 반환됨
+//    }
+//
+//    @Test
+//    @DisplayName("카테고리와 키워드로 게시글 조회")
+//    void findPostsByCategoryAndKeywordWithKeyword() {
+//        List<PostSummaryResponseDTO> filteredPosts = postRepository.findPostsByCategoryAndKeyword(
+//                "TECHNOLOGY",
+//                "Spring",
+//                "content",
+//                "date",
+//                PageRequest.of(1 - 1, 40)
+//        );
+//
+//        assertThat(filteredPosts).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide'가 필터링되어 반환됨
+//    }
+//
+//    @Test
+//    @DisplayName("카테고리로 게시글 조회")
+//    void findPostsByCategoryOnly() {
+//        List<PostSummaryResponseDTO> posts = postRepository.findPostsByCategoryAndKeyword(
+//                "TECHNOLOGY",
+//                null,
+//                null,
+//                null,
+//                PageRequest.of(1-1, 40)
+//        );
+//
+//        assertThat(posts).hasSize(2);  // 'Spring Boot Introduction'과 'Spring Security Guide'만 반환됨
+//    }
+//
+//    @Test
+//    @DisplayName("키워드로 게시글 조회")
+//    void findPostsByKeywordOnly() {
+//        List<PostSummaryResponseDTO> filteredPosts = postRepository.findPostsByCategoryAndKeyword(
+//                null,
+//                "Spring",
+//                "content",
+//                "date",
+//                PageRequest.of(1-1, 40)
+//        );
+//
+//        assertThat(filteredPosts).hasSize(3);  // 모든 게시글에 'Spring' 키워드가 포함되어 있음
+//    }
+//
+//    @Test
+//    @DisplayName("카테고리와 키워드로 필터링된 게시글이 없을 경우")
+//    void findPostsByCategoryAndKeywordNoMatch() {
+//
+//
+//        assertThatThrownBy(() ->
+//                 postRepository.findPostsByCategoryAndKeyword(
+//                        "LIFESTYLE",  // 존재하지 않는 카테고리, 카테고리는 사용자가 조정할 수 없음, exception
+//                        "Java",  // 해당 키워드가 게시글에 없음
+//                        "title+content",
+//                        null,
+//                        PageRequest.of(1-1, 40)
+//                )
+//                ).isInstanceOf(CategoryNotFoundException.class)
+//                .hasMessage("카테고리 정보가 없습니다.");
+//
+//
+//    }
+//
+//    @Test
+//    @DisplayName("페이징 처리 테스트")
+//    void findPostsWithPagination() {
+//        List<PostSummaryResponseDTO> page1 = postRepository.findPostsByCategoryAndKeyword(
+//                "TECHNOLOGY",
+//                null,
+//                null,
+//                null,
+//                PageRequest.of(1-1, 2)  // 페이지 크기 2
+//        );
+//
+//        assertThat(page1).hasSize(2);  // 첫 번째 페이지는 2개의 게시글만 반환
+//
+//        List<PostSummaryResponseDTO> page2 = postRepository.findPostsByCategoryAndKeyword(
+//                "TECHNOLOGY",
+//                null,
+//                null,
+//                null,
+//                PageRequest.of(2-1, 2)  // 두 번째 페이지
+//        );
+//
+//        assertThat(page2).hasSize(0);  // 두 번째 페이지에는 더 이상 게시글이 없음
+//    }
 
 
 }

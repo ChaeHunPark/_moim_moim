@@ -1,6 +1,6 @@
 package com.example.MoimMoim.service.moimService;
 
-import com.example.MoimMoim.dto.moim.MoimCommentRequestDTO;
+import com.example.MoimMoim.dto.moimPost.MoimCommentRequestDTO;
 
 public interface MoimCommentService {
     // 댓글 작성

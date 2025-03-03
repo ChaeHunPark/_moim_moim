@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimPost;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

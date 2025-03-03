@@ -26,13 +26,15 @@ public enum Category {
     ENVIRONMENT("환경/에코"),
     ETC("기타");
 
-    private final String displayName;
+    private final String label;
 
-    Category(String displayName) {
-        this.displayName = displayName;
+    Category(String label) {
+        this.label = label;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getLabel() { // displayName getter
+        return label;
     }
+
+
 }

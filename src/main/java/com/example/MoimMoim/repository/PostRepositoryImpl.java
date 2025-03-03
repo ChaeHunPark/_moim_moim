@@ -3,6 +3,7 @@ package com.example.MoimMoim.repository;
 import com.example.MoimMoim.domain.Post;
 import com.example.MoimMoim.domain.QComment;
 import com.example.MoimMoim.domain.QPost;
+import com.example.MoimMoim.dto.post.PostPageResponseDTO;
 import com.example.MoimMoim.dto.post.PostSummaryResponseDTO;
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.exception.post.CategoryNotFoundException;
@@ -29,15 +30,11 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
     }
 
     @Override
-    public List<PostSummaryResponseDTO> findPostsByCategoryAndKeyword(String category, String keyword, String searchBy, String sortBy, Pageable pageable) {
+    public PostPageResponseDTO<PostSummaryResponseDTO> findPostsByCategoryAndKeyword(String category, String keyword, String searchBy, String sortBy, Pageable pageable) {
         QPost post = QPost.post;
         QComment comment = QComment.comment;
 
-        JPAQuery<Tuple> query = queryFactory.select(post, comment.count())
-                .from(post)
-                .leftJoin(post.comments, comment)
-                .groupBy(post.postId);
-
+        JPAQuery<Tuple> query = getQuery(post, comment);
         BooleanBuilder whereClause = new BooleanBuilder();
 
         if (category != null && !category.isEmpty()) {
@@ -71,6 +68,8 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
 
         query.where(whereClause);
 
+        long totalElements = query.fetch().size(); // 필터링된 전체 개수 계산
+
         // 3. 정렬 기준
         if ("date-asc".equalsIgnoreCase(sortBy)) {
             query.orderBy(post.createAt.asc());
@@ -82,15 +81,21 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
             query.orderBy(comment.count().desc());
         }
 
+        // 4. 페이지 번호 유효성 검사
+        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize()); // 총 페이지 수 계산
+        int currentPage = pageable.getPageNumber(); // 0-based index
+        if (currentPage >= totalPages) {
+            currentPage = 0; // 페이지 넘버가 총 페이지 수보다 크면 첫 페이지로 리다이렉트
+        }
 
-
-        // 반환 사이즈 조정
+        // 5. 실제 데이터 조회 (유효한 페이지 번호를 사용하여 데이터 가져오기)
         List<Tuple> results = query
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .offset((long) currentPage * pageable.getPageSize()) // offset은 (currentPage * pageSize)
+                .limit(pageable.getPageSize()) // 페이지 사이즈 만큼 데이터 가져오기
+                .fetch(); // 실제 데이터 조회
 
-        return results.stream()
+
+        List<PostSummaryResponseDTO> posts = results.stream()
                 .map(tuple -> {
                     Post postEntity = tuple.get(post);
                     long commentCount = Optional.ofNullable(tuple.get(comment.count())).orElse(0L);
@@ -98,7 +103,7 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                     PostSummaryResponseDTO postResponseDTO = new PostSummaryResponseDTO();
                     postResponseDTO.setPostId(postEntity.getPostId());
                     postResponseDTO.setTitle(postEntity.getTitle());
-                    postResponseDTO.setCategory(postEntity.getCategory());
+                    postResponseDTO.setCategory(postEntity.getCategory().getLabel());
                     postResponseDTO.setCreateAt(postEntity.getCreateAt().toString());
                     postResponseDTO.setNickname(postEntity.getMember().getNickname());
                     postResponseDTO.setCommentCount(commentCount);
@@ -107,5 +112,28 @@ public class PostRepositoryImpl implements PostRepositoryCustom {
                     return postResponseDTO;
                 })
                 .collect(Collectors.toList());
+
+
+
+        PostPageResponseDTO<PostSummaryResponseDTO> postPageResponseDTO = new PostPageResponseDTO<>(
+                posts,
+                totalPages,
+                totalElements,
+                currentPage + 1,
+                pageable.getPageSize()
+        );
+
+        return postPageResponseDTO;
+
+
+
+    }
+
+    private JPAQuery<Tuple> getQuery(QPost post, QComment comment) {
+        JPAQuery<Tuple> query = queryFactory.select(post, comment.count())
+                .from(post)
+                .leftJoin(post.comments, comment)
+                .groupBy(post.postId);
+        return query;
     }
 }

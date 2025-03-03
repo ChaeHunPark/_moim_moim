@@ -57,4 +57,11 @@ public class Post {
     }
 
 
+    public void update(String title, Category category, String Content) {
+        this.title = title;
+        this.category = category;
+        this.content = content;
+        setUpdateAt(LocalDateTime.now());
+    }
+
 }

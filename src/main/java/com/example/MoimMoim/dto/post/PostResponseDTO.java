@@ -15,7 +15,7 @@ public class PostResponseDTO {
 
     private Long postId;
     private String title;
-    private Category category;
+    private String category;
     private String content;
     private String createAt;
     private String updateAt;

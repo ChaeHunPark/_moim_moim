@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimPost;
 
 import com.example.MoimMoim.enums.Category;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -22,7 +22,7 @@ public class MoimPostRequestDTO {
     private String title;
 
     @NotNull(message = "카테고리는 필수 입력 항목입니다.")
-    private Category category;
+    private String category;
 
     @NotBlank(message = "내용은 필수 입력 항목입니다.")
     private String content;

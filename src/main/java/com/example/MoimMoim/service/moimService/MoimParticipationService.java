@@ -1,10 +1,8 @@
 package com.example.MoimMoim.service.moimService;
 
-import com.example.MoimMoim.domain.MoimParticipation;
-import com.example.MoimMoim.dto.moim.MoimParticipationListResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationResponseDTO;
-import com.example.MoimMoim.exception.member.MemberAlreadyExistsException;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
 
 import java.util.List;
 
@@ -39,5 +37,9 @@ public interface MoimParticipationService {
 
     // 5-1.거절한 사람 조회
     List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId);
+
+
+    //모임 취소
+    void cancellationMoimPost(Long moimPostId, String reason);
 
 }

@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimPost;
 
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
@@ -24,8 +24,8 @@ public class MoimPostResponseDTO {
     private Double mapy; // 위도
     private int currentParticipants; // 현재 참여 인원
     private int maxParticipants; // 최대 참여 인원
-    private Category category; // 카테고리
-    private MoimStatus moimStatus; // 모임 상태
+    private String category; // 카테고리
+    private String moimStatus; // 모임 상태
     private Long viewCount; // 조회수
     private String moimDate; // 모임 날짜
     private String createdAt; // 생성 날짜

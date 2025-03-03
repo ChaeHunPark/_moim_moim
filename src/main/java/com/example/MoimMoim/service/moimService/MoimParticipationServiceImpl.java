@@ -1,9 +1,9 @@
 package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moim.MoimParticipationListResponseDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationRequestDTO;
-import com.example.MoimMoim.dto.moim.MoimParticipationResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
@@ -100,14 +100,14 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
         MoimParticipationResponseDTO moimParticipationResponseDTO = MoimParticipationResponseDTO.builder()
                 .moimParticipationRequestId(moimParticipation.getMoimParticipationRequestId()).moimPostId(moimPost.getMoimPostId())
                 .region(moimPost.getRegion())
-                .Category(moimPost.getCategory())
+                .Category(moimPost.getCategory().getLabel())
                 .hostNickname(moimPost.getMember().getNickname())
                 .nickname(moimParticipation.getMember().getNickname())
                 .intro(moimParticipation.getIntro())
                 .reasonParticipation(moimParticipation.getReasonParticipation())
                 .moimDate(dateTimeUtilService.formatForClient(moimPost.getMoimDate()))
-                .moimStatus(moimPost.getMoimStatus())
-                .ParticipationStatus(moimParticipation.getParticipationStatus())
+                .moimStatus(moimPost.getMoimStatus().getDisplayName())
+                .ParticipationStatus(moimParticipation.getParticipationStatus().getLabel())
                 .createdAt(dateTimeUtilService.formatForClient(moimParticipation.getCreatedAt()))
                 .build();
 
@@ -178,10 +178,10 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                         participation.getMoimParticipationRequestId(),
                         participation.getMoimPost().getMoimPostId(),
                         participation.getMoimPost().getRegion(),
-                        participation.getMoimPost().getCategory(),
+                        participation.getMoimPost().getCategory().getLabel(),
                         participation.getMoimPost().getMoimDate().toString(),
                         participation.getMember().getNickname(),
-                        participation.getParticipationStatus(),
+                        participation.getParticipationStatus().getLabel(),
                         participation.getCreatedAt().toString()
                 )).toList();
     }
@@ -200,10 +200,10 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                             participation.moimParticipationRequestId,
                             moimPost.moimPostId,
                             moimPost.region,
-                            moimPost.category,
+                            moimPost.category.stringValue(),
                             moimPost.moimDate.stringValue(),
                             participation.member.nickname,
-                            participation.participationStatus,
+                            participation.participationStatus.stringValue(),
                             participation.createdAt.stringValue()
                         ))
                 .from(participation)
@@ -300,10 +300,10 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
                         acceptedMember.moimParticipation.moimParticipationRequestId, // 신청 고유 ID
                         moimPost.moimPostId, // 모임 고유 ID
                         moimPost.region, // 지역
-                        moimPost.category, // 카테고리 이름
+                        moimPost.category.stringValue(), // 카테고리 이름
                         moimPost.moimDate.stringValue(), // 모임 날짜
                         member.nickname, // 신청자 닉네임
-                        participation.participationStatus, // 참여 상태
+                        participation.participationStatus.stringValue(), // 참여 상태
                         participation.createdAt.stringValue())) // 신청 생성 시간
                 .from(acceptedMember)
                 .join(acceptedMember.moimParticipation, participation)  // MoimParticipation과 조인
@@ -327,4 +327,36 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
 
 
     // 모임 취소
+    @Override
+    public void cancellationMoimPost(Long moimPostId, String reason) {
+
+        MoimPost moimPost = moimPostRepository.findById(moimPostId)
+                .orElseThrow(() -> new PostNotFoundException("게시글 정보를 찾을 수 없습니다."));
+
+        // 1. 포스트 취소 상태로 변경
+        moimPost.setMoimStatus(MoimStatus.CANCELED);
+        moimPost.setUpdateAt(LocalDateTime.now());
+        moimPost.setCancellationReason(reason);
+
+        moimPostRepository.save(moimPost);
+
+        // 2. 모임 신청자들의 상태 변경
+        List<MoimParticipation> participationList = moimParticipationRepository.findByMoimPost(moimPost);
+
+        // 거절한 사람은 상태 변경이 필요없음.
+        for (MoimParticipation participation : participationList) {
+            if(participation.getParticipationStatus() != ParticipationStatus.REJECTED) {
+                participation.setParticipationStatus(ParticipationStatus.CANCELED);
+                participation.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+
+        moimParticipationRepository.saveAll(participationList);
+
+        // 3. 수락된 신청자들 조회해서 삭제
+        List<MoimAccptedMember> acceptMemberList = moimAccptedMemberRepository.findByMoimParticipationIn(participationList);
+
+        moimAccptedMemberRepository.deleteAllInBatch(acceptMemberList);
+
+    }
 }

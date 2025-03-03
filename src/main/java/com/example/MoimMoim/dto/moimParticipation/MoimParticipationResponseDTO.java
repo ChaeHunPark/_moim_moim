@@ -1,4 +1,4 @@
-package com.example.MoimMoim.dto.moim;
+package com.example.MoimMoim.dto.moimParticipation;
 
 import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.MoimStatus;
@@ -24,7 +24,7 @@ public class MoimParticipationResponseDTO {
 
     // 모임 정보
     private String region; // 지역
-    private Category Category; // 카테고리
+    private String Category; // 카테고리
     private String moimDate; // 모임 날짜
     private String hostNickname; // 모임 생성자(호스트) 이름
 
@@ -34,8 +34,8 @@ public class MoimParticipationResponseDTO {
     private String reasonParticipation; // 참여 사유
 
     // 신청 상태
-    private MoimStatus moimStatus; // 모임 상태
-    private ParticipationStatus ParticipationStatus; // 참여 상태
+    private String moimStatus; // 모임 상태
+    private String ParticipationStatus; // 참여 상태
 
     // 시간 정보
     private String createdAt; // 신청 생성 시간

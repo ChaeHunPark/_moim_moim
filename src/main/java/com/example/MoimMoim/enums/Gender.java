@@ -1,17 +1,18 @@
 package com.example.MoimMoim.enums;
 
 public enum Gender {
-    MALE("남"),
-    FEMALE("여");
+    MALE("남자"),
+    FEMALE("여자");
 
-    private final String description;
+    private final String label;
 
-    Gender(String description) {
-        this.description = description;
+    Gender(String label) {
+        this.label = label;
     }
 
-    public String getDescription() {
-        return description;
+    public String getLabel() {
+        return label;
     }
+
 
 }
