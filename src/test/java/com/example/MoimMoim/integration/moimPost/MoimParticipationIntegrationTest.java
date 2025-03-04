@@ -3,10 +3,9 @@ package com.example.MoimMoim.integration.moimPost;
 import com.example.MoimMoim.domain.Member;
 import com.example.MoimMoim.domain.MoimParticipation;
 import com.example.MoimMoim.domain.MoimPost;
-import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
 import com.example.MoimMoim.dto.moimPost.MoimPostRequestDTO;
-import com.example.MoimMoim.enums.Category;
 import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.repository.MemberRepository;
 import com.example.MoimMoim.repository.MoimParticipationRepository;
@@ -280,8 +279,8 @@ public class MoimParticipationIntegrationTest {
 
         log.info("contentAsString : {} ", contentAsString);
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isZero();
@@ -303,8 +302,8 @@ public class MoimParticipationIntegrationTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isZero();
@@ -374,8 +373,8 @@ public class MoimParticipationIntegrationTest {
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
         });
 
         assertThat(participationList.size()).isOne();
@@ -428,8 +427,8 @@ public class MoimParticipationIntegrationTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isOne();
@@ -451,8 +450,8 @@ public class MoimParticipationIntegrationTest {
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isZero();
@@ -474,8 +473,8 @@ public class MoimParticipationIntegrationTest {
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isZero();
@@ -511,8 +510,8 @@ public class MoimParticipationIntegrationTest {
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
 
-        List<MoimParticipationListResponseDTO> participationList = objectMapper.readValue(contentAsString,
-                new TypeReference<List<MoimParticipationListResponseDTO>>() {
+        List<MoimParticipationListDTO> participationList = objectMapper.readValue(contentAsString,
+                new TypeReference<List<MoimParticipationListDTO>>() {
                 });
 
         assertThat(participationList.size()).isOne();

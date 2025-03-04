@@ -1,9 +1,10 @@
 package com.example.MoimMoim.service.moimService;
 
 import com.example.MoimMoim.domain.*;
-import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimPostInParicipationListDTO;
 import com.example.MoimMoim.enums.MoimStatus;
 import com.example.MoimMoim.enums.ParticipationStatus;
 import com.example.MoimMoim.exception.member.MemberNotFoundException;
@@ -14,14 +15,22 @@ import com.example.MoimMoim.repository.MoimAccptedMemberRepository;
 import com.example.MoimMoim.repository.MoimParticipationRepository;
 import com.example.MoimMoim.repository.MoimPostRepository;
 import com.example.MoimMoim.service.utilService.DateTimeUtilService;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MoimParticipationServiceImpl implements MoimParticipationService{
@@ -166,51 +175,92 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
     }
 
     @Override
-    public List<MoimParticipationListResponseDTO> getMyParticipationList(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("사용자를 찾을 수 없습니다."));
-        List<MoimParticipation> moimParticipations = moimParticipationRepository.findByMember(member);
-
-
-
-
-        return moimParticipations.stream().map(participation -> new MoimParticipationListResponseDTO(
-                        participation.getMoimParticipationRequestId(),
-                        participation.getMoimPost().getMoimPostId(),
-                        participation.getMoimPost().getRegion(),
-                        participation.getMoimPost().getCategory().getLabel(),
-                        participation.getMoimPost().getMoimDate().toString(),
-                        participation.getMember().getNickname(),
-                        participation.getParticipationStatus().getLabel(),
-                        participation.getCreatedAt().toString()
-                )).toList();
+    public List<MoimPostInParicipationListDTO> getApplicantParticipationList(Long applicantId) {
+        return getParticipationList(applicantId, "applicantId");
     }
 
     @Override
-    public List<MoimParticipationListResponseDTO> getReceivedParticipationList(Long ownerId) {
+    public List<MoimPostInParicipationListDTO> getReceivedParticipationList(Long receiverId) {
+        return getParticipationList(receiverId, "receiverId");
+    }
+
+    private List<MoimPostInParicipationListDTO> getParticipationList(Long memberId, String userType) {
         QMember member = QMember.member;
         QMoimPost moimPost = QMoimPost.moimPost;
         QMoimParticipation participation = QMoimParticipation.moimParticipation;
 
+        List<Tuple> result = List.of();
 
-        // Projections.constructor를 사용하여 결과를 DTO로 매핑
-        return jpaQueryFactory.select
-                        (Projections.constructor( // 첫번째 인자는 변환할 DTO class, 다음인자는 순서가 맞아야함.
-                            MoimParticipationListResponseDTO.class,
-                            participation.moimParticipationRequestId,
-                            moimPost.moimPostId,
-                            moimPost.region,
-                            moimPost.category.stringValue(),
-                            moimPost.moimDate.stringValue(),
-                            participation.member.nickname,
-                            participation.participationStatus.stringValue(),
-                            participation.createdAt.stringValue()
-                        ))
-                .from(participation)
-                .join(participation.moimPost, moimPost) // 연관관계 연결 id로 조인
-                .join(moimPost.member, member) // 연관관계 연결 id로 조인
-                .where(member.memberId.eq(ownerId)) // Post의 Member는 작성한 사람, member와 join해서 작성자를 찾는다.
-                .fetch();
+// 한 번의 쿼리로 모든 데이터를 가져오기
+        JPAQuery<Tuple> select = jpaQueryFactory
+                .select(
+                        moimPost.moimPostId,
+                        moimPost.title,
+                        moimPost.region,
+                        moimPost.category.stringValue(),
+                        moimPost.member.nickname,
+                        moimPost.currentParticipants,
+                        moimPost.maxParticipants,
+                        moimPost.moimStatus.stringValue(),
+                        moimPost.moimDate.stringValue(),
+                        moimPost.createdAt.stringValue(),
+                        participation.moimParticipationRequestId,
+                        participation.member.nickname,
+                        participation.participationStatus.stringValue(),
+                        participation.createdAt.stringValue()
+                );
+
+        if(userType.equals("receiverId"))
+            result = select
+                    .from(moimPost)
+                    .leftJoin(participation).on(participation.moimPost.moimPostId.eq(moimPost.moimPostId))  // 모임에 대한 신청자 LEFT JOIN
+                    .where(moimPost.member.memberId.eq(memberId))
+                    .fetch();
+        if(userType.equals("applicantId"))
+            result = select
+                    .from(participation) // 신청자 관점이므로 participation을 기준으로 가져옴
+                    .join(participation.moimPost, moimPost) // 모임 정보를 가져오기 위해 조인
+                    .where(participation.member.memberId.eq(memberId)) // 특정 신청자가 신청한 모임만 조회
+                    .fetch();
+
+
+
+
+//  `moimPostId` 기준으로 그룹핑
+        Map<Long, MoimPostInParicipationListDTO> moimPostMap = new HashMap<>();
+
+        for (Tuple row : result) {
+            Long moimPostId = row.get(moimPost.moimPostId);
+
+            //  해당 `moimPostId` 가 처음 등장한 경우 DTO 생성
+            moimPostMap.putIfAbsent(moimPostId, new MoimPostInParicipationListDTO(
+                    moimPostId,
+                    row.get(moimPost.title),
+                    row.get(moimPost.region),
+                    row.get(moimPost.category.stringValue()),
+                    row.get(moimPost.member.nickname),
+                    row.get(moimPost.currentParticipants),
+                    row.get(moimPost.maxParticipants),
+                    row.get(moimPost.moimStatus.stringValue()),
+                    row.get(moimPost.moimDate.stringValue()),
+                    row.get(moimPost.createdAt.stringValue()),
+                    new ArrayList<>() // 참여자 리스트 초기화
+            ));
+
+            //  참여 신청 데이터가 있는 경우 리스트에 추가
+            if (row.get(participation.moimParticipationRequestId) != null) {
+                moimPostMap.get(moimPostId).getParticipationList().add(new MoimParticipationListDTO(
+                        row.get(participation.moimParticipationRequestId),
+                        moimPostId,
+                        row.get(participation.member.nickname),
+                        row.get(participation.participationStatus.stringValue()),
+                        row.get(participation.createdAt.stringValue())
+                ));
+            }
+        }
+
+// 5️⃣ 결과 반환
+        return new ArrayList<>(moimPostMap.values());
     }
 
     // 상태가 이미 수락(ACCEPTED) 또는 거절(REJECTED)인지 확인하는 메서드
@@ -289,14 +339,14 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
     }
 
     // 상태에 따라 참여자 조회 메서드
-    private List<MoimParticipationListResponseDTO> getParticipantsByStatus(Long moimPostId, ParticipationStatus status) {
+    private List<MoimParticipationListDTO> getParticipantsByStatus(Long moimPostId, ParticipationStatus status) {
         QMoimAccptedMember acceptedMember = QMoimAccptedMember.moimAccptedMember;
         QMoimParticipation participation = QMoimParticipation.moimParticipation;
         QMoimPost moimPost = QMoimPost.moimPost;
         QMember member = QMember.member;
 
         return jpaQueryFactory
-                .select(Projections.constructor(MoimParticipationListResponseDTO.class,
+                .select(Projections.constructor(MoimParticipationListDTO.class,
                         acceptedMember.moimParticipation.moimParticipationRequestId, // 신청 고유 ID
                         moimPost.moimPostId, // 모임 고유 ID
                         moimPost.region, // 지역
@@ -315,12 +365,12 @@ public class MoimParticipationServiceImpl implements MoimParticipationService{
     }
 
     @Override
-    public List<MoimParticipationListResponseDTO> getAcceptedParticipants(Long moimPostId) {
+    public List<MoimParticipationListDTO> getAcceptedParticipants(Long moimPostId) {
         return getParticipantsByStatus(moimPostId, ParticipationStatus.ACCEPTED);
     }
 
     @Override
-    public List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId) {
+    public List<MoimParticipationListDTO> getRejectedParticipationList(Long moimPostId) {
         return getParticipantsByStatus(moimPostId, ParticipationStatus.REJECTED);
     }
 

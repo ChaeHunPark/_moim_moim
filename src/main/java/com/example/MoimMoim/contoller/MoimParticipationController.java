@@ -1,14 +1,13 @@
 package com.example.MoimMoim.contoller;
 
-import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
-import com.example.MoimMoim.jwtUtil.CustomUserDetails;
+import com.example.MoimMoim.dto.moimParticipation.MoimPostInParicipationListDTO;
 import com.example.MoimMoim.service.moimService.MoimParticipationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,16 +52,16 @@ public class MoimParticipationController {
     }
 
     // 신청한 목록 조회
-    @GetMapping("/my-participation/{memberId}")
-    public ResponseEntity<List<MoimParticipationListResponseDTO>> getMyParticipationList(@PathVariable("memberId") Long memberId) {
-        List<MoimParticipationListResponseDTO> participationList = moimParticipationService.getMyParticipationList(memberId);
+    @GetMapping("/my-participation/{applicantId}")
+    public ResponseEntity<List<MoimPostInParicipationListDTO>> getMyParticipationList(@PathVariable("applicantId") Long applicantId) {
+        List<MoimPostInParicipationListDTO> participationList = moimParticipationService.getApplicantParticipationList(applicantId);
         return ResponseEntity.status(HttpStatus.OK).body(participationList);
     }
 
     // 신청받은 목록 조회 (모임 주최자)
-    @GetMapping("/received-participation/{ownerId}")
-    public ResponseEntity<List<MoimParticipationListResponseDTO>> getReceivedParticipationList(@PathVariable("ownerId") Long ownerId) {
-        List<MoimParticipationListResponseDTO> participationList = moimParticipationService.getReceivedParticipationList(ownerId);
+    @GetMapping("/received-participation/{receiverId}")
+    public ResponseEntity<List<MoimPostInParicipationListDTO>> getReceivedParticipationList(@PathVariable("ownerId") Long receiverId) {
+        List<MoimPostInParicipationListDTO> participationList = moimParticipationService.getReceivedParticipationList(receiverId);
         return ResponseEntity.status(HttpStatus.OK).body(participationList);
     }
 
@@ -84,18 +83,18 @@ public class MoimParticipationController {
 
     //수락한 사람 조회
     @GetMapping("/accepted-participants/{moimPostId}")
-    public ResponseEntity<List<MoimParticipationListResponseDTO>> getAcceptedParticipants(
+    public ResponseEntity<List<MoimParticipationListDTO>> getAcceptedParticipants(
             @PathVariable("moimPostId") Long moimPostId) {
-        List<MoimParticipationListResponseDTO> acceptedParticipants =
+        List<MoimParticipationListDTO> acceptedParticipants =
                 moimParticipationService.getAcceptedParticipants(moimPostId);
         return ResponseEntity.ok(acceptedParticipants);
     }
 
     //거절한 사람 조회
     @GetMapping("/rejected-participants/{moimPostId}")
-    public ResponseEntity<List<MoimParticipationListResponseDTO>> getRejectedParticipants(
+    public ResponseEntity<List<MoimParticipationListDTO>> getRejectedParticipants(
             @PathVariable("moimPostId") Long moimPostId) {
-        List<MoimParticipationListResponseDTO> rejectedParticipants =
+        List<MoimParticipationListDTO> rejectedParticipants =
                 moimParticipationService.getRejectedParticipationList(moimPostId);
         return ResponseEntity.ok(rejectedParticipants);
     }

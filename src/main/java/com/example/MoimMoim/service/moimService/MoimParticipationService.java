@@ -1,8 +1,9 @@
 package com.example.MoimMoim.service.moimService;
 
-import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimParticipationListDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationRequestDTO;
 import com.example.MoimMoim.dto.moimParticipation.MoimParticipationResponseDTO;
+import com.example.MoimMoim.dto.moimParticipation.MoimPostInParicipationListDTO;
 
 import java.util.List;
 
@@ -21,10 +22,10 @@ public interface MoimParticipationService {
     MoimParticipationResponseDTO getReceivedParticipation(Long ownerId, Long participationId);
 
     // 3. 리스트 조회 (신청한 목록)
-    List<MoimParticipationListResponseDTO> getMyParticipationList(Long memberId);
+    List<MoimPostInParicipationListDTO> getApplicantParticipationList(Long applicantId);
 
     // 3-1. 리스트 조회 (신청받은 목록)
-    List<MoimParticipationListResponseDTO> getReceivedParticipationList(Long ownerId);
+    List<MoimPostInParicipationListDTO> getReceivedParticipationList(Long receiverId);
 
     // 4.신청 수락
     void acceptParticipation(Long participationId, Long ownerId);
@@ -33,10 +34,10 @@ public interface MoimParticipationService {
     void rejectParticipation(Long participationId, Long ownerId, String rejectionReason);
 
     // 5.수락한 사람 조회
-    List<MoimParticipationListResponseDTO> getAcceptedParticipants(Long moimPostId);
+    List<MoimParticipationListDTO> getAcceptedParticipants(Long moimPostId);
 
     // 5-1.거절한 사람 조회
-    List<MoimParticipationListResponseDTO> getRejectedParticipationList(Long moimPostId);
+    List<MoimParticipationListDTO> getRejectedParticipationList(Long moimPostId);
 
 
     //모임 취소
